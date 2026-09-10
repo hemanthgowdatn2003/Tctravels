@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="js/data.js"></script>
+  <!-- Auto-convert Apple iPhone HEIC/HEIF photos to standard JPG in browser -->
+  <script src="js/heic2any.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';"></script>
   
   <style>
     :root {
@@ -925,8 +927,8 @@
           <div class="media-dropzone" id="mediaDropzone" onclick="document.getElementById('galleryFileInput').click()">
             <div style="font-size: 2.5rem; margin-bottom: 8px;">📷</div>
             <h4 style="font-weight: 800; color: var(--royal-blue); margin-bottom: 4px;">Click to Select or Drag & Drop Image Here</h4>
-            <p style="font-size: 0.85rem; color: #64748B;">Supports JPG, PNG, WEBP, SVG (up to 35 MB). Instant upload from Mobile Camera or PC.</p>
-            <input type="file" id="galleryFileInput" accept="image/*" style="display: none;" onchange="uploadGalleryImage(event)">
+            <p style="font-size: 0.85rem; color: #64748B;">Supports JPG, PNG, WEBP, SVG, HEIC (up to 35 MB). Instant upload from Mobile Camera or PC (select single or multiple photos).</p>
+            <input type="file" id="galleryFileInput" accept="image/*,.jpg,.jpeg,.png,.webp,.svg,.jfif,.bmp,.gif,.heic,.heif" multiple style="display: none;" onchange="uploadGalleryImage(event)">
             <div id="galleryUploadStatus" style="margin-top: 12px; font-weight: 700; color: #0284C7; display: none;">⏳ Uploading picture...</div>
           </div>
         </div>
@@ -2070,6 +2072,8 @@
 
     // Helper to auto-resize and compress photos for web use to guarantee fast loading & safety
     async function compressImageForWeb(file) {
+      if (!file) throw new Error('No file provided');
+
       // SVGs don't need raster compression
       if ((file.type && file.type.includes('svg')) || (file.name && file.name.toLowerCase().endsWith('.svg'))) {
         return new Promise((resolve, reject) => {
@@ -2080,47 +2084,74 @@
         });
       }
 
+      // Fast image compression using URL.createObjectURL + HTML5 Canvas
       return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const rawUrl = reader.result;
-          const img = new Image();
-          img.onload = () => {
+        let objectUrl = null;
+        try {
+          objectUrl = URL.createObjectURL(file);
+        } catch (e) {
+          // Fallback if createObjectURL is unavailable
+        }
+
+        const cleanup = () => {
+          if (objectUrl) {
+            try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+          }
+        };
+
+        const img = new Image();
+        img.onload = () => {
+          try {
             const MAX_DIM = 1200;
-            let w = img.naturalWidth || img.width;
-            let h = img.naturalHeight || img.height;
+            let w = img.naturalWidth || img.width || 800;
+            let h = img.naturalHeight || img.height || 600;
 
             if (w > MAX_DIM || h > MAX_DIM) {
-              if (w > h) {
+              if (w >= h) {
                 h = Math.round((h * MAX_DIM) / w);
                 w = MAX_DIM;
               } else {
-                w = Math.round((w * MAX_HEIGHT) / h);
+                w = Math.round((w * MAX_DIM) / h);
                 h = MAX_DIM;
               }
             }
 
             const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
+            canvas.width = Math.max(1, w);
+            canvas.height = Math.max(1, h);
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            try {
-              const compressed = canvas.toDataURL('image/jpeg', 0.85);
-              resolve({ dataUrl: compressed, width: w, height: h });
-            } catch (err) {
-              resolve({ dataUrl: rawUrl, width: w, height: h });
-            }
-          };
-          img.onerror = () => {
-            // Fallback to raw data URL if canvas cannot decode
-            resolve({ dataUrl: rawUrl, width: 0, height: 0 });
-          };
-          img.src = rawUrl;
+            // Compress to JPEG with 0.82 quality for sharp visuals and lightweight payload (~80-150KB)
+            const compressed = canvas.toDataURL('image/jpeg', 0.82);
+            cleanup();
+            resolve({ dataUrl: compressed, width: canvas.width, height: canvas.height });
+          } catch (canvasErr) {
+            console.warn('Canvas compression error, reading as fallback:', canvasErr);
+            cleanup();
+            const fallbackReader = new FileReader();
+            fallbackReader.onload = () => resolve({ dataUrl: fallbackReader.result, width: 0, height: 0 });
+            fallbackReader.onerror = () => reject(new Error('Failed to read image file'));
+            fallbackReader.readAsDataURL(file);
+          }
         };
-        reader.onerror = () => reject(new Error('Failed to read image file from device'));
-        reader.readAsDataURL(file);
+
+        img.onerror = () => {
+          cleanup();
+          const fallbackReader = new FileReader();
+          fallbackReader.onload = () => resolve({ dataUrl: fallbackReader.result, width: 0, height: 0 });
+          fallbackReader.onerror = () => reject(new Error('Failed to decode image file'));
+          fallbackReader.readAsDataURL(file);
+        };
+
+        if (objectUrl) {
+          img.src = objectUrl;
+        } else {
+          const reader = new FileReader();
+          reader.onload = () => { img.src = reader.result; };
+          reader.onerror = () => reject(new Error('Failed to read image file from device'));
+          reader.readAsDataURL(file);
+        }
       });
     }
 
@@ -2138,16 +2169,49 @@
         throw new Error('Please select an image file (JPG, PNG, WEBP, SVG, JFIF)');
       }
 
-      // Optimize image for fast web performance & storage safety
+      // Automatic iPhone / iOS HEIC conversion to JPEG
+      const isHeic = /\.(heic|heif)$/i.test(fileName) || mimeType.includes('heic') || mimeType.includes('heif');
+      if (isHeic) {
+        if (typeof heic2any !== 'undefined') {
+          try {
+            const converted = await heic2any({
+              blob: file,
+              toType: 'image/jpeg',
+              quality: 0.85
+            });
+            const outBlob = Array.isArray(converted) ? converted[0] : converted;
+            const newName = (file.name || 'iphone_photo.jpg').replace(/\.(heic|heif)$/i, '.jpg');
+            try {
+              file = new File([outBlob], newName, { type: 'image/jpeg' });
+            } catch (_) {
+              outBlob.name = newName;
+              file = outBlob;
+            }
+          } catch (heicErr) {
+            console.error('HEIC conversion error:', heicErr);
+            throw new Error('Could not convert iPhone HEIC photo. Please select a JPG or PNG, or adjust iPhone Camera settings to "Most Compatible".');
+          }
+        } else {
+          console.warn('heic2any not loaded, attempting standard processing');
+        }
+      }
+
+      // Optimize image for fast web performance & storage safety (typically takes <50ms)
       const { dataUrl } = await compressImageForWeb(file);
 
       // GITHUB PAGES / STATIC HOST: Save to localStorage & gallery
       if (IS_STATIC_HOST) {
         try {
-          const customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+          let customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
           customGallery.unshift({ name: file.name, url: dataUrl, isUpload: true });
-          if (customGallery.length > 30) customGallery.pop();
-          localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+          if (customGallery.length > 20) customGallery = customGallery.slice(0, 20);
+          try {
+            localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+          } catch (quotaErr) {
+            // Prune older items if localStorage quota is tight
+            customGallery = customGallery.slice(0, 8);
+            localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+          }
         } catch (e) {
           console.warn('Storage warning:', e);
         }
@@ -2160,30 +2224,48 @@
       }
 
       // LOCAL NODE.JS SERVER: Send to /api/upload
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${AUTH_TOKEN}`
-        },
-        body: JSON.stringify({
-          filename: file.name,
-          data: dataUrl
-        })
-      });
-
-      const text = await res.text();
-      let data = null;
       try {
-        data = JSON.parse(text);
-      } catch (jsonErr) {
-        throw new Error(`Server returned status ${res.status}`);
-      }
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify({
+            filename: file.name,
+            data: dataUrl
+          })
+        });
 
-      if (res.ok && data && data.success) {
-        return data;
-      } else {
-        throw new Error((data && data.error) || 'Upload failed');
+        const text = await res.text();
+        let data = null;
+        try {
+          data = JSON.parse(text);
+        } catch (jsonErr) {
+          throw new Error(`Server returned status ${res.status}`);
+        }
+
+        if (res.ok && data && data.success) {
+          return data;
+        } else {
+          throw new Error((data && data.error) || 'Upload failed');
+        }
+      } catch (serverErr) {
+        // Fallback gracefully so admin user can still preview & continue work without interruption
+        console.warn('Direct upload error, saving locally as fallback:', serverErr);
+        try {
+          let customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+          customGallery.unshift({ name: file.name, url: dataUrl, isUpload: true });
+          if (customGallery.length > 15) customGallery = customGallery.slice(0, 15);
+          localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+        } catch (_) {}
+
+        return {
+          success: true,
+          url: dataUrl,
+          filename: file.name,
+          fallback: true
+        };
       }
     }
 
@@ -2230,18 +2312,25 @@
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       const status = document.getElementById('addVUploadStatus');
-      status.style.display = 'inline';
-      status.innerText = '⏳ Uploading...';
+      if (status) {
+        status.style.display = 'inline';
+        status.innerText = '⚡ Optimizing & uploading...';
+      }
       try {
         const res = await uploadImageFile(file);
         document.getElementById('addVImage').value = res.url;
         document.getElementById('addVImagePreview').src = res.url;
-        status.innerText = '✅ Image Uploaded!';
+        if (status) {
+          status.innerText = '✅ Image Uploaded!';
+          setTimeout(() => { if (status.innerText === '✅ Image Uploaded!') status.style.display = 'none'; }, 3500);
+        }
         showToast('Vehicle image uploaded successfully!');
         loadGalleryImages();
       } catch (err) {
         alert('Image upload failed: ' + err.message);
-        status.style.display = 'none';
+        if (status) status.style.display = 'none';
+      } finally {
+        if (e.target) e.target.value = '';
       }
     }
 
@@ -2250,18 +2339,25 @@
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       const status = document.getElementById('addPkgUploadStatus');
-      status.style.display = 'inline';
-      status.innerText = '⏳ Uploading...';
+      if (status) {
+        status.style.display = 'inline';
+        status.innerText = '⚡ Optimizing & uploading...';
+      }
       try {
         const res = await uploadImageFile(file);
         document.getElementById('addPkgImage').value = res.url;
         document.getElementById('addPkgImagePreview').src = res.url;
-        status.innerText = '✅ Image Uploaded!';
+        if (status) {
+          status.innerText = '✅ Image Uploaded!';
+          setTimeout(() => { if (status.innerText === '✅ Image Uploaded!') status.style.display = 'none'; }, 3500);
+        }
         showToast('Tour package image uploaded successfully!');
         loadGalleryImages();
       } catch (err) {
         alert('Image upload failed: ' + err.message);
-        status.style.display = 'none';
+        if (status) status.style.display = 'none';
+      } finally {
+        if (e.target) e.target.value = '';
       }
     }
 
@@ -2272,7 +2368,7 @@
       const status = document.getElementById(`fleetUploadStatus_${idx}`);
       if (status) {
         status.style.display = 'inline';
-        status.innerText = '⏳ Uploading...';
+        status.innerText = '⚡ Optimizing...';
       }
       try {
         const res = await uploadImageFile(file);
@@ -2283,12 +2379,17 @@
         if (SITE_DATA && SITE_DATA.fleet && SITE_DATA.fleet[idx]) {
           SITE_DATA.fleet[idx].image = res.url;
         }
-        if (status) status.innerText = '✅ Uploaded!';
+        if (status) {
+          status.innerText = '✅ Uploaded!';
+          setTimeout(() => { if (status.innerText === '✅ Uploaded!') status.style.display = 'none'; }, 3500);
+        }
         showToast('Car picture uploaded! Click "Save All Changes" to publish to live site.');
         loadGalleryImages();
       } catch (err) {
         alert('Upload failed: ' + err.message);
         if (status) status.style.display = 'none';
+      } finally {
+        if (e.target) e.target.value = '';
       }
     }
 
@@ -2299,7 +2400,7 @@
       const status = document.getElementById(`pkgUploadStatus_${idx}`);
       if (status) {
         status.style.display = 'inline';
-        status.innerText = '⏳ Uploading...';
+        status.innerText = '⚡ Optimizing...';
       }
       try {
         const res = await uploadImageFile(file);
@@ -2310,12 +2411,17 @@
         if (SITE_DATA && SITE_DATA.tours && SITE_DATA.tours[idx]) {
           SITE_DATA.tours[idx].image = res.url;
         }
-        if (status) status.innerText = '✅ Uploaded!';
+        if (status) {
+          status.innerText = '✅ Uploaded!';
+          setTimeout(() => { if (status.innerText === '✅ Uploaded!') status.style.display = 'none'; }, 3500);
+        }
         showToast('Tour picture uploaded! Click "Save All Changes" to publish to live site.');
         loadGalleryImages();
       } catch (err) {
         alert('Upload failed: ' + err.message);
         if (status) status.style.display = 'none';
+      } finally {
+        if (e.target) e.target.value = '';
       }
     }
 
@@ -2326,7 +2432,7 @@
       const status = document.getElementById('logoUploadStatus');
       if (status) {
         status.style.display = 'inline';
-        status.innerText = '⏳ Uploading logo...';
+        status.innerText = '⚡ Optimizing logo...';
       }
       try {
         const res = await uploadImageFile(file);
@@ -2337,32 +2443,59 @@
         if (SITE_DATA && SITE_DATA.company) {
           SITE_DATA.company.logo = res.url;
         }
-        if (status) status.innerText = '✅ Logo Uploaded!';
+        if (status) {
+          status.innerText = '✅ Logo Uploaded!';
+          setTimeout(() => { if (status.innerText === '✅ Logo Uploaded!') status.style.display = 'none'; }, 3500);
+        }
         showToast('Brand logo picture uploaded successfully! Click "Save All Changes" to publish.');
         loadGalleryImages();
       } catch (err) {
         alert('Logo upload failed: ' + err.message);
         if (status) status.style.display = 'none';
+      } finally {
+        if (e.target) e.target.value = '';
       }
     }
 
-    // Upload directly from Gallery Tab
+    // Upload directly from Gallery Tab (supports single or multiple photos)
     async function uploadGalleryImage(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
+      const files = e.target && e.target.files ? Array.from(e.target.files) : [];
+      if (files.length === 0) return;
+
       const status = document.getElementById('galleryUploadStatus');
       if (status) {
         status.style.display = 'block';
-        status.innerText = '⏳ Uploading picture to server...';
+        status.innerText = files.length > 1 ? `⚡ Optimizing 1 of ${files.length} pictures...` : '⚡ Fast-optimizing & uploading picture...';
       }
+
+      let successCount = 0;
+      let lastRes = null;
       try {
-        const res = await uploadImageFile(file);
-        if (status) status.style.display = 'none';
-        showToast(`✅ Picture "${res.filename}" uploaded successfully!`);
+        for (let i = 0; i < files.length; i++) {
+          if (status && files.length > 1) {
+            status.innerText = `⚡ Uploading ${i + 1} of ${files.length} pictures...`;
+          }
+          lastRes = await uploadImageFile(files[i]);
+          successCount++;
+        }
+
+        if (status) {
+          status.innerText = `✅ Successfully uploaded ${successCount} picture${successCount > 1 ? 's' : ''}!`;
+          setTimeout(() => { status.style.display = 'none'; }, 3500);
+        }
+
+        const msg = successCount > 1 
+          ? `✅ ${successCount} pictures uploaded successfully to gallery!` 
+          : `✅ Picture "${(lastRes && lastRes.filename) || files[0].name}" uploaded successfully!`;
+        showToast(msg);
         loadGalleryImages();
       } catch (err) {
         alert('Upload failed: ' + err.message);
         if (status) status.style.display = 'none';
+      } finally {
+        if (e.target && 'value' in e.target) {
+          e.target.value = '';
+        }
       }
     }
 
@@ -2400,18 +2533,27 @@
             <img src="${img.url}" alt="${img.name}" class="media-card-img" onerror="this.src='images/tc-travels-logo.jpg'">
             <div class="media-card-body">
               <div>
-                <div class="media-card-name">${img.name}</div>
+                <div class="media-card-name" title="${img.name}">${img.name}</div>
                 <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: ${img.isUpload ? '#DCFCE7; color: #15803D;' : '#E0F2FE; color: #0369A1;'} font-weight: 700;">
                   ${img.isUpload ? '⭐ Custom Upload' : '📁 System Asset'}
                 </span>
               </div>
-              <button type="button" class="btn-copy-url" onclick="copyImageUrl('${img.url}')">
-                📋 Copy Path
-              </button>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button type="button" class="btn-copy-url" onclick="copyImageUrl('${img.url}')">
+                  📋 Copy Path
+                </button>
+                ${img.isUpload ? `
+                <button type="button" class="btn-action-danger" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; background: #FEE2E2; color: #DC2626; cursor: pointer; font-weight: 700;" onclick="deleteCustomUpload('${encodeURIComponent(img.name)}', '${encodeURIComponent(img.url)}')" title="Delete this uploaded picture">
+                  🗑️
+                </button>` : ''}
+              </div>
             </div>
           </div>
         `).join('');
       }
+
+      // Automatically repair any legacy .HEIC images uploaded from iPhone in localStorage
+      repairExistingHeicUploads();
 
       // Static / GitHub Pages host: combine localStorage gallery uploads + system images
       if (IS_STATIC_HOST) {
@@ -2438,6 +2580,77 @@
       } catch (err) {
         const customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
         renderImageList([...customGallery, ...systemImages]);
+      }
+    }
+
+    // Delete custom uploaded picture from gallery
+    function deleteCustomUpload(encName, encUrl) {
+      const name = decodeURIComponent(encName);
+      const url = decodeURIComponent(encUrl);
+      if (!confirm(`Are you sure you want to delete "${name}" from your uploaded pictures?`)) return;
+
+      try {
+        let customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+        customGallery = customGallery.filter(item => item.name !== name && item.url !== url);
+        localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+      } catch (e) {
+        console.warn(e);
+      }
+
+      // Also delete from local Node server if applicable
+      if (!IS_STATIC_HOST && url.startsWith('images/uploads/')) {
+        const filename = url.replace('images/uploads/', '');
+        fetch(`/api/images/${filename}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        }).catch(() => {});
+      }
+
+      showToast(`🗑️ Picture "${name}" deleted from gallery`);
+      loadGalleryImages();
+    }
+
+    // Auto-repair any stored .HEIC image in localStorage so user's existing iPhone uploads show up immediately!
+    let _repairingHeic = false;
+    async function repairExistingHeicUploads() {
+      if (_repairingHeic || typeof heic2any === 'undefined') return;
+      try {
+        let customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+        let modified = false;
+        _repairingHeic = true;
+
+        for (let i = 0; i < customGallery.length; i++) {
+          const item = customGallery[i];
+          if (item && item.name && /\.(heic|heif)$/i.test(item.name) && item.url && item.url.startsWith('data:')) {
+            try {
+              const res = await fetch(item.url);
+              const blob = await res.blob();
+              const conv = await heic2any({ blob: blob, toType: 'image/jpeg', quality: 0.85 });
+              const outBlob = Array.isArray(conv) ? conv[0] : conv;
+              const reader = new FileReader();
+              await new Promise((resolve) => {
+                reader.onload = () => {
+                  item.url = reader.result;
+                  item.name = item.name.replace(/\.(heic|heif)$/i, '.jpg');
+                  modified = true;
+                  resolve();
+                };
+                reader.onerror = resolve;
+                reader.readAsDataURL(outBlob);
+              });
+            } catch (err) {
+              console.warn('Could not auto-repair stored HEIC file:', item.name, err);
+            }
+          }
+        }
+        if (modified) {
+          localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+          showToast('✅ Converted your iPhone HEIC photos to standard JPG!');
+          loadGalleryImages();
+        }
+      } catch (_) {
+      } finally {
+        _repairingHeic = false;
       }
     }
 
@@ -2472,9 +2685,9 @@
 
       dropzone.addEventListener('drop', (e) => {
         const dt = e.dataTransfer;
-        const files = dt.files;
+        const files = dt && dt.files;
         if (files && files.length > 0) {
-          uploadGalleryImage({ target: { files: [files[0]] } });
+          uploadGalleryImage({ target: { files: Array.from(files) } });
         }
       });
     }

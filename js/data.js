@@ -35,7 +35,7 @@ const TC_DATA = {
       "category": "sedan",
       "categoryLabel": "Prime AC Sedan",
       "tag": "Most Popular",
-      "image": "images/uploads/_trashed-1738666391-img_202501-1789023078122.jpg",
+      "image": "images/maruti-swift.jpg",
       "seats": "4 Passengers",
       "luggage": "2 Large Bags",
       "ac": "Chilled AC",

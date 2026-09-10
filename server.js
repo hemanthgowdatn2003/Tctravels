@@ -318,6 +318,32 @@ function createServer() {
     }
 
 
+    // 8. DELETE /api/images/:filename (Delete uploaded image)
+    if (method === 'DELETE' && parsedUrl.startsWith('/api/images/')) {
+      if (!isAuthorized(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'Unauthorized: Admin login required' }));
+        return;
+      }
+      const rawFilename = parsedUrl.replace('/api/images/', '');
+      const safeFilename = path.basename(rawFilename);
+      const targetFile = path.join(PUBLIC_DIR, 'images', 'uploads', safeFilename);
+      if (fs.existsSync(targetFile)) {
+        try {
+          fs.unlinkSync(targetFile);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, message: 'Image deleted' }));
+        } catch (delErr) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: delErr.message }));
+        }
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'File not found' }));
+      }
+      return;
+    }
+
     // Safety catch-all for unmatched /api/ endpoints (avoids static file 404 or 405)
     if (parsedUrl.startsWith('/api/')) {
       res.writeHead(404, { 'Content-Type': 'application/json' });
