@@ -351,6 +351,145 @@
       background: #C2410C;
     }
 
+    /* Picture Uploader & Gallery Styles */
+    .image-uploader-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      background: #F8FAFC;
+      border: 1px dashed #CBD5E1;
+      border-radius: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .img-preview-thumb {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+      background: #E2E8F0;
+      flex-shrink: 0;
+    }
+
+    .uploader-actions {
+      flex: 1;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .btn-file-upload-label {
+      background: #0284C7;
+      color: #FFFFFF;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      transition: background 0.2s;
+    }
+
+    .btn-file-upload-label:hover {
+      background: #0369A1;
+    }
+
+    .upload-progress-text {
+      font-size: 0.78rem;
+      color: #059669;
+      font-weight: 600;
+      display: none;
+    }
+
+    /* Media Drop Zone & Gallery */
+    .media-dropzone {
+      border: 2px dashed #94A3B8;
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      background: #F8FAFC;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 24px;
+    }
+
+    .media-dropzone:hover, .media-dropzone.dragover {
+      border-color: var(--cta-orange);
+      background: #FFF7ED;
+    }
+
+    .media-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .media-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .media-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .media-card-img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background: #F1F5F9;
+    }
+
+    .media-card-body {
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .media-card-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      word-break: break-all;
+    }
+
+    .btn-copy-url {
+      background: #F1F5F9;
+      color: #475569;
+      border: 1px solid #CBD5E1;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-copy-url:hover {
+      background: var(--cta-orange);
+      color: #FFFFFF;
+      border-color: var(--cta-orange);
+    }
+
     /* Toast Notification */
     .toast-popup {
       position: fixed;
@@ -611,6 +750,9 @@
       <button type="button" class="sidebar-tab-btn" data-tab="tabPackages">
         🗺️ Tour Packages
       </button>
+      <button type="button" class="sidebar-tab-btn" data-tab="tabGallery">
+        🖼️ Upload Pictures & Gallery
+      </button>
       <button type="button" class="sidebar-tab-btn" data-tab="tabSecurity">
         ⚙️ Change Password
       </button>
@@ -682,6 +824,25 @@
             </div>
           </div>
         </div>
+
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>🎨 Website Logo</h3>
+          </div>
+          <div class="image-uploader-card">
+            <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo" class="img-preview-thumb" id="companyLogoPrev" style="background: #FFF; object-fit: contain;">
+            <div class="uploader-actions">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <label class="btn-file-upload-label">
+                  📷 Upload New Logo Picture
+                  <input type="file" accept="image/*" style="display: none;" onchange="uploadLogoImage(event)">
+                </label>
+                <span id="logoUploadStatus" class="upload-progress-text">✅ Logo Uploaded!</span>
+              </div>
+              <p style="font-size: 0.78rem; color: #64748B;">Upload your official travel logo. It will update the brand logo on header and login screens.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ====================================================================
@@ -742,7 +903,46 @@
       </section>
 
       <!-- ====================================================================
-           TAB 5: ADMIN PASSWORD SETTINGS
+           TAB 5: UPLOAD PICTURES & MEDIA GALLERY
+           ==================================================================== -->
+      <section class="tab-section" id="tabGallery">
+        <div class="section-head">
+          <div>
+            <h2>Upload Pictures & Media Gallery</h2>
+            <p>Upload new vehicle pictures, tour photos, or destination scenes directly from your phone or PC.</p>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>📤 Upload New Picture File</h3>
+          </div>
+
+          <div class="media-dropzone" id="mediaDropzone" onclick="document.getElementById('galleryFileInput').click()">
+            <div style="font-size: 2.5rem; margin-bottom: 8px;">📷</div>
+            <h4 style="font-weight: 800; color: var(--royal-blue); margin-bottom: 4px;">Click to Select or Drag & Drop Image Here</h4>
+            <p style="font-size: 0.85rem; color: #64748B;">Supports JPG, PNG, WEBP, SVG (up to 35 MB). Instant upload from Mobile Camera or PC.</p>
+            <input type="file" id="galleryFileInput" accept="image/*" style="display: none;" onchange="uploadGalleryImage(event)">
+            <div id="galleryUploadStatus" style="margin-top: 12px; font-weight: 700; color: #0284C7; display: none;">⏳ Uploading picture...</div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>🖼️ Website Photo Library (<span id="mediaCountText">Loading...</span>)</h3>
+            <button type="button" class="btn-action-primary" onclick="loadGalleryImages()" style="padding: 6px 14px; font-size: 0.8rem;">
+              🔄 Refresh Gallery
+            </button>
+          </div>
+
+          <div class="media-gallery-grid" id="mediaGalleryContainer">
+            <!-- Dynamically populated by loadGalleryImages() -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 6: ADMIN PASSWORD SETTINGS
            ==================================================================== -->
       <section class="tab-section" id="tabSecurity">
         <div class="section-head">
@@ -820,16 +1020,32 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Car Image</label>
-          <select id="addVImage" class="form-select">
-            <option value="images/maruti-dzire.jpg">Maruti Dzire (images/maruti-dzire.jpg)</option>
-            <option value="images/innova-crysta.jpg">Toyota Innova Crysta (images/innova-crysta.jpg)</option>
-            <option value="images/maruti-ertiga.jpg">Maruti Ertiga (images/maruti-ertiga.jpg)</option>
-            <option value="images/tempo-traveller.jpg">Tempo Traveller (images/tempo-traveller.jpg)</option>
-            <option value="images/toyota-etios.jpg">Toyota Etios (images/toyota-etios.jpg)</option>
-            <option value="images/maruti-swift.jpg">Maruti Swift (images/maruti-swift.jpg)</option>
-            <option value="images/toyota-fortuner.jpg">Toyota Fortuner (images/toyota-fortuner.jpg)</option>
-          </select>
+          <label class="form-label">Car Picture</label>
+          <div class="image-uploader-card">
+            <img src="images/maruti-dzire.jpg" alt="Preview" class="img-preview-thumb" id="addVImagePreview">
+            <div class="uploader-actions">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <label class="btn-file-upload-label">
+                  📷 Upload New Car Picture
+                  <input type="file" id="addVImageFileInput" accept="image/*" style="display: none;" onchange="uploadAddVImage(event)">
+                </label>
+                <span id="addVUploadStatus" class="upload-progress-text">✅ Image Uploaded!</span>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                <input type="text" id="addVImage" class="form-input" value="images/maruti-dzire.jpg" placeholder="Image path or URL" style="font-size: 0.8rem; padding: 6px 10px;" oninput="updateImagePreview('addVImagePreview', this.value)">
+                <select id="addVImagePreset" class="form-select" style="font-size: 0.8rem; padding: 6px 10px; width: auto; max-width: 170px;" onchange="choosePresetImage('addVImage', 'addVImagePreview', this.value)">
+                  <option value="">Choose preset...</option>
+                  <option value="images/maruti-dzire.jpg">Dzire</option>
+                  <option value="images/innova-crysta.jpg">Innova Crysta</option>
+                  <option value="images/maruti-ertiga.jpg">Ertiga</option>
+                  <option value="images/tempo-traveller.jpg">Tempo</option>
+                  <option value="images/toyota-etios.jpg">Etios</option>
+                  <option value="images/maruti-swift.jpg">Swift</option>
+                  <option value="images/toyota-fortuner.jpg">Fortuner</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="form-grid-3">
@@ -914,14 +1130,30 @@
 
         <div class="form-group">
           <label class="form-label">Tour Photo</label>
-          <select id="addPkgImage" class="form-select">
-            <option value="images/mysore-palace.jpg">Mysore Palace (images/mysore-palace.jpg)</option>
-            <option value="images/coorg-hills.jpg">Coorg Hills (images/coorg-hills.jpg)</option>
-            <option value="images/ooty-tea.jpg">Ooty Tea Estates (images/ooty-tea.jpg)</option>
-            <option value="images/mysore-palace-day.jpg">Palace Day / Highway (images/mysore-palace-day.jpg)</option>
-            <option value="images/brindavan-gardens.jpg">Brindavan Gardens (images/brindavan-gardens.jpg)</option>
-            <option value="images/chamundi-hill.jpg">Chamundi Hill (images/chamundi-hill.jpg)</option>
-          </select>
+          <div class="image-uploader-card">
+            <img src="images/mysore-palace.jpg" alt="Preview" class="img-preview-thumb" id="addPkgImagePreview">
+            <div class="uploader-actions">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <label class="btn-file-upload-label">
+                  📷 Upload New Tour Picture
+                  <input type="file" id="addPkgImageFileInput" accept="image/*" style="display: none;" onchange="uploadAddPkgImage(event)">
+                </label>
+                <span id="addPkgUploadStatus" class="upload-progress-text">✅ Image Uploaded!</span>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                <input type="text" id="addPkgImage" class="form-input" value="images/mysore-palace.jpg" placeholder="Image path or URL" style="font-size: 0.8rem; padding: 6px 10px;" oninput="updateImagePreview('addPkgImagePreview', this.value)">
+                <select id="addPkgImagePreset" class="form-select" style="font-size: 0.8rem; padding: 6px 10px; width: auto; max-width: 170px;" onchange="choosePresetImage('addPkgImage', 'addPkgImagePreview', this.value)">
+                  <option value="">Choose preset...</option>
+                  <option value="images/mysore-palace.jpg">Mysore Palace</option>
+                  <option value="images/coorg-hills.jpg">Coorg Hills</option>
+                  <option value="images/ooty-tea.jpg">Ooty Tea</option>
+                  <option value="images/mysore-palace-day.jpg">Palace Day</option>
+                  <option value="images/brindavan-gardens.jpg">Brindavan Gardens</option>
+                  <option value="images/chamundi-hill.jpg">Chamundi Hill</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="form-group">
@@ -1030,6 +1262,7 @@
       setupPasswordForm();
       setupModalHandlers();
       setupAddEntityForms();
+      setupGalleryDropzone();
     });
 
     // 1. Check Authentication State
@@ -1104,7 +1337,12 @@
 
           btn.classList.add('active');
           const targetSection = document.getElementById(btn.dataset.tab);
-          if (targetSection) targetSection.classList.add('active');
+          if (targetSection) {
+            targetSection.classList.add('active');
+            if (btn.dataset.tab === 'tabGallery') {
+              loadGalleryImages();
+            }
+          }
         });
       });
     }
@@ -1115,6 +1353,7 @@
         const res = await fetch('/api/data');
         SITE_DATA = await res.json();
         populateFields();
+        loadGalleryImages();
       } catch (err) {
         alert('Could not fetch site data: ' + err.message);
       }
@@ -1197,6 +1436,25 @@
             <div class="form-group">
               <label class="form-label">Local Package (8h/80km) Price</label>
               <input type="text" class="form-input js-fleet-localprice" data-idx="${idx}" value="${car.localPackagePrice}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Car Picture</label>
+            <div class="image-uploader-card">
+              <img src="${car.image || 'images/maruti-dzire.jpg'}" alt="${car.name}" class="img-preview-thumb" id="fleetImgPrev_${idx}">
+              <div class="uploader-actions">
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <label class="btn-file-upload-label">
+                    📷 Upload New Car Picture
+                    <input type="file" accept="image/*" style="display: none;" onchange="uploadFleetCarImage(event, ${idx})">
+                  </label>
+                  <span id="fleetUploadStatus_${idx}" class="upload-progress-text">✅ Image Updated!</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                  <input type="text" class="form-input js-fleet-image" id="fleetImgInput_${idx}" data-idx="${idx}" value="${car.image || ''}" placeholder="Image path or URL" style="font-size: 0.8rem; padding: 6px 10px;" oninput="updateImagePreview('fleetImgPrev_${idx}', this.value)">
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1294,11 +1552,25 @@
               <div class="help-hint">Example: ₹ 1,800, ₹ 6,200</div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Tour Photo</label>
-              <input type="text" class="form-input js-tour-image" data-idx="${idx}" value="${t.image || ''}">
+          <div class="form-group">
+            <label class="form-label">Tour Photo</label>
+            <div class="image-uploader-card">
+              <img src="${t.image || 'images/mysore-palace.jpg'}" alt="${t.title}" class="img-preview-thumb" id="pkgImgPrev_${idx}">
+              <div class="uploader-actions">
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <label class="btn-file-upload-label">
+                    📷 Upload New Tour Picture
+                    <input type="file" accept="image/*" style="display: none;" onchange="uploadPackageTourImage(event, ${idx})">
+                  </label>
+                  <span id="pkgUploadStatus_${idx}" class="upload-progress-text">✅ Image Updated!</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                  <input type="text" class="form-input js-tour-image" id="pkgImgInput_${idx}" data-idx="${idx}" value="${t.image || ''}" placeholder="Image path or URL" style="font-size: 0.8rem; padding: 6px 10px;" oninput="updateImagePreview('pkgImgPrev_${idx}', this.value)">
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
           <div class="form-group">
             <label class="form-label">Places Included (Comma separated)</label>
@@ -1511,6 +1783,12 @@
           const idx = parseInt(input.dataset.idx, 10);
           if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].localPackagePrice = input.value.trim();
         });
+        document.querySelectorAll('.js-fleet-image').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx] && input.value.trim()) {
+            SITE_DATA.fleet[idx].image = input.value.trim();
+          }
+        });
         document.querySelectorAll('.js-fleet-features').forEach(input => {
           const idx = parseInt(input.dataset.idx, 10);
           if (SITE_DATA.fleet[idx]) {
@@ -1626,6 +1904,275 @@
           }
         } catch (err) {
           alert('Network error: ' + err.message);
+        }
+      });
+    }
+
+    // =========================================================================
+    // IMAGE UPLOAD & GALLERY FUNCTIONS
+    // =========================================================================
+
+    // Universal Base64 Upload function
+    async function uploadImageFile(file) {
+      if (!file) throw new Error('No file provided');
+      if (!file.type.startsWith('image/')) throw new Error('Selected file must be an image (JPG, PNG, WEBP, SVG)');
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const base64Data = reader.result;
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${AUTH_TOKEN}`
+              },
+              body: JSON.stringify({
+                filename: file.name,
+                data: base64Data
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              resolve(data);
+            } else {
+              reject(new Error(data.error || 'Upload failed'));
+            }
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read image file from disk'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Live preview updater
+    function updateImagePreview(previewId, val) {
+      const img = document.getElementById(previewId);
+      if (img && val) {
+        img.src = val;
+      }
+    }
+
+    // Preset chooser
+    function choosePresetImage(inputId, previewId, val) {
+      if (!val) return;
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (input) input.value = val;
+      if (preview) preview.src = val;
+    }
+
+    // Upload when adding vehicle in Modal
+    async function uploadAddVImage(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById('addVUploadStatus');
+      status.style.display = 'inline';
+      status.innerText = '⏳ Uploading...';
+      try {
+        const res = await uploadImageFile(file);
+        document.getElementById('addVImage').value = res.url;
+        document.getElementById('addVImagePreview').src = res.url;
+        status.innerText = '✅ Image Uploaded!';
+        showToast('Vehicle image uploaded successfully!');
+        loadGalleryImages();
+      } catch (err) {
+        alert('Image upload failed: ' + err.message);
+        status.style.display = 'none';
+      }
+    }
+
+    // Upload when adding package in Modal
+    async function uploadAddPkgImage(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById('addPkgUploadStatus');
+      status.style.display = 'inline';
+      status.innerText = '⏳ Uploading...';
+      try {
+        const res = await uploadImageFile(file);
+        document.getElementById('addPkgImage').value = res.url;
+        document.getElementById('addPkgImagePreview').src = res.url;
+        status.innerText = '✅ Image Uploaded!';
+        showToast('Tour package image uploaded successfully!');
+        loadGalleryImages();
+      } catch (err) {
+        alert('Image upload failed: ' + err.message);
+        status.style.display = 'none';
+      }
+    }
+
+    // Upload for specific existing fleet vehicle card
+    async function uploadFleetCarImage(e, idx) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById(`fleetUploadStatus_${idx}`);
+      if (status) {
+        status.style.display = 'inline';
+        status.innerText = '⏳ Uploading...';
+      }
+      try {
+        const res = await uploadImageFile(file);
+        const input = document.getElementById(`fleetImgInput_${idx}`);
+        const preview = document.getElementById(`fleetImgPrev_${idx}`);
+        if (input) input.value = res.url;
+        if (preview) preview.src = res.url;
+        if (SITE_DATA && SITE_DATA.fleet && SITE_DATA.fleet[idx]) {
+          SITE_DATA.fleet[idx].image = res.url;
+        }
+        if (status) status.innerText = '✅ Uploaded!';
+        showToast('Car picture uploaded! Click "Save All Changes" to publish to live site.');
+        loadGalleryImages();
+      } catch (err) {
+        alert('Upload failed: ' + err.message);
+        if (status) status.style.display = 'none';
+      }
+    }
+
+    // Upload for specific existing tour package card
+    async function uploadPackageTourImage(e, idx) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById(`pkgUploadStatus_${idx}`);
+      if (status) {
+        status.style.display = 'inline';
+        status.innerText = '⏳ Uploading...';
+      }
+      try {
+        const res = await uploadImageFile(file);
+        const input = document.getElementById(`pkgImgInput_${idx}`);
+        const preview = document.getElementById(`pkgImgPrev_${idx}`);
+        if (input) input.value = res.url;
+        if (preview) preview.src = res.url;
+        if (SITE_DATA && SITE_DATA.tours && SITE_DATA.tours[idx]) {
+          SITE_DATA.tours[idx].image = res.url;
+        }
+        if (status) status.innerText = '✅ Uploaded!';
+        showToast('Tour picture uploaded! Click "Save All Changes" to publish to live site.');
+        loadGalleryImages();
+      } catch (err) {
+        alert('Upload failed: ' + err.message);
+        if (status) status.style.display = 'none';
+      }
+    }
+
+    // Upload brand logo
+    async function uploadLogoImage(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById('logoUploadStatus');
+      if (status) {
+        status.style.display = 'inline';
+        status.innerText = '⏳ Uploading logo...';
+      }
+      try {
+        const res = await uploadImageFile(file);
+        const preview = document.getElementById('companyLogoPrev');
+        if (preview) preview.src = res.url;
+        if (status) status.innerText = '✅ Logo Uploaded!';
+        showToast('Brand logo picture uploaded successfully!');
+        loadGalleryImages();
+      } catch (err) {
+        alert('Logo upload failed: ' + err.message);
+        if (status) status.style.display = 'none';
+      }
+    }
+
+    // Upload directly from Gallery Tab
+    async function uploadGalleryImage(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const status = document.getElementById('galleryUploadStatus');
+      if (status) {
+        status.style.display = 'block';
+        status.innerText = '⏳ Uploading picture to server...';
+      }
+      try {
+        const res = await uploadImageFile(file);
+        if (status) status.style.display = 'none';
+        showToast(`✅ Picture "${res.filename}" uploaded successfully!`);
+        loadGalleryImages();
+      } catch (err) {
+        alert('Upload failed: ' + err.message);
+        if (status) status.style.display = 'none';
+      }
+    }
+
+    // Load and render gallery images
+    async function loadGalleryImages() {
+      const container = document.getElementById('mediaGalleryContainer');
+      const countText = document.getElementById('mediaCountText');
+      if (!container) return;
+
+      try {
+        const res = await fetch('/api/images');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.images)) {
+          if (countText) countText.innerText = `${data.images.length} Photos`;
+          if (data.images.length === 0) {
+            container.innerHTML = '<div style="color: #64748B; padding: 20px;">No photos found. Upload your first picture above!</div>';
+            return;
+          }
+
+          container.innerHTML = data.images.map(img => `
+            <div class="media-card">
+              <img src="${img.url}" alt="${img.name}" class="media-card-img" onerror="this.src='images/tc-travels-logo.jpg'">
+              <div class="media-card-body">
+                <div>
+                  <div class="media-card-name">${img.name}</div>
+                  <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: ${img.isUpload ? '#DCFCE7; color: #15803D;' : '#E0F2FE; color: #0369A1;'} font-weight: 700;">
+                    ${img.isUpload ? '⭐ Custom Upload' : '📁 System Asset'}
+                  </span>
+                </div>
+                <button type="button" class="btn-copy-url" onclick="copyImageUrl('${img.url}')">
+                  📋 Copy Path
+                </button>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        if (container) container.innerHTML = `<div style="color: #EF4444;">Failed to load photos: ${err.message}</div>`;
+      }
+    }
+
+    function copyImageUrl(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast(`📋 Copied "${url}" to clipboard! You can paste this path anywhere.`);
+      }).catch(() => {
+        prompt('Copy Image URL:', url);
+      });
+    }
+
+    // Setup drag and drop for gallery dropzone
+    function setupGalleryDropzone() {
+      const dropzone = document.getElementById('mediaDropzone');
+      if (!dropzone) return;
+
+      ['dragenter', 'dragover'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove('dragover');
+        });
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+          uploadGalleryImage({ target: { files: [files[0]] } });
         }
       });
     }

@@ -50,12 +50,12 @@ function isAuthorized(req) {
   return Array.isArray(config.tokens) && config.tokens.includes(token);
 }
 
-// Helper to parse JSON body
+// Helper to parse JSON body (supports base64 image uploads up to 35MB)
 function parseJsonBody(req, callback) {
   let body = '';
   req.on('data', chunk => {
     body += chunk;
-    if (body.length > 5 * 1024 * 1024) { // 5MB limit
+    if (body.length > 35 * 1024 * 1024) { // 35MB limit for high-res pictures
       req.destroy();
     }
   });
@@ -200,6 +200,110 @@ function createServer() {
       res.end(JSON.stringify({ success: true }));
       return;
     }
+
+    // 6. POST /api/upload (Upload Picture for Fleet, Packages, or Site Assets)
+    if (method === 'POST' && parsedUrl === '/api/upload') {
+      if (!isAuthorized(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'Unauthorized: Admin login required' }));
+        return;
+      }
+
+      parseJsonBody(req, (err, payload) => {
+        if (err || !payload || !payload.data) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Invalid upload payload: image data required' }));
+          return;
+        }
+
+        try {
+          const uploadDir = path.join(PUBLIC_DIR, 'images', 'uploads');
+          if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+          }
+
+          const rawFilename = (payload.filename || 'photo.jpg').trim();
+          const parsedExt = path.extname(rawFilename).toLowerCase() || '.jpg';
+          const validExts = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'];
+          const ext = validExts.includes(parsedExt) ? parsedExt : '.jpg';
+          
+          const rawBaseName = path.basename(rawFilename, parsedExt).replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+          const cleanBaseName = (rawBaseName || 'picture').substring(0, 30);
+          const safeFilename = `${cleanBaseName}-${Date.now()}${ext}`;
+          const targetPath = path.join(uploadDir, safeFilename);
+
+          // Strip Data URI prefix if present
+          const base64Content = payload.data.replace(/^data:image\/\w+;base64,/, '');
+          const buffer = Buffer.from(base64Content, 'base64');
+
+          fs.writeFileSync(targetPath, buffer);
+
+          const relativeUrl = `images/uploads/${safeFilename}`;
+          console.log(`📸 Successfully uploaded picture: ${relativeUrl} (${(buffer.length / 1024).toFixed(1)} KB)`);
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: true,
+            url: relativeUrl,
+            filename: safeFilename,
+            sizeKb: Math.round(buffer.length / 1024)
+          }));
+        } catch (uploadErr) {
+          console.error('Upload error:', uploadErr);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Failed to write image to disk: ' + uploadErr.message }));
+        }
+      });
+      return;
+    }
+
+    // 7. GET /api/images (List all available website and uploaded images)
+    if (method === 'GET' && parsedUrl === '/api/images') {
+      try {
+        const imageList = [];
+        const baseImagesDir = path.join(PUBLIC_DIR, 'images');
+        const uploadDir = path.join(baseImagesDir, 'uploads');
+
+        if (fs.existsSync(baseImagesDir)) {
+          const files = fs.readdirSync(baseImagesDir);
+          for (const f of files) {
+            const ext = path.extname(f).toLowerCase();
+            if (['.jpg', '.jpeg', '.png', '.webp', '.svg'].includes(ext)) {
+              imageList.push({
+                name: f,
+                url: `images/${f}`,
+                isUpload: false
+              });
+            }
+          }
+        }
+
+        if (fs.existsSync(uploadDir)) {
+          const uFiles = fs.readdirSync(uploadDir);
+          for (const f of uFiles) {
+            const ext = path.extname(f).toLowerCase();
+            if (['.jpg', '.jpeg', '.png', '.webp', '.svg'].includes(ext)) {
+              imageList.unshift({ // Newest uploads first
+                name: f,
+                url: `images/uploads/${f}`,
+                isUpload: true
+              });
+            }
+          }
+        }
+
+        res.writeHead(200, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify({ success: true, images: imageList }));
+      } catch (listErr) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: listErr.message }));
+      }
+      return;
+    }
+
 
     // =========================================================================
     // STATIC ASSET SERVING
