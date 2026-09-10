@@ -70,7 +70,7 @@ function parseJsonBody(req, callback) {
 }
 
 function createServer() {
-  const server = http.createServer((req, res) => {
+  const requestHandler = (req, res) => {
     const parsedUrl = req.url.split('?')[0];
     const method = req.method.toUpperCase();
 
@@ -334,7 +334,9 @@ function createServer() {
       const stream = fs.createReadStream(filePath);
       stream.pipe(res);
     });
-  });
+  };
+
+  const server = http.createServer(requestHandler);
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
@@ -356,6 +358,15 @@ function createServer() {
     console.log('====================================================');
     console.log('Default Admin: admin | Password: admin123\n');
   });
+
+  // Also bind port 3001 as secondary if PORT is 3000 so localhost:3001 works seamlessly too!
+  if (PORT === 3000) {
+    const server3001 = http.createServer(requestHandler);
+    server3001.on('error', () => {});
+    server3001.listen(3001, () => {
+      console.log(`🌐 Also active on port 3001: http://localhost:3001/admin.html`);
+    });
+  }
 }
 
 createServer();

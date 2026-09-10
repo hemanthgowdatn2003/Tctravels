@@ -1933,11 +1933,28 @@
                 data: base64Data
               })
             });
-            const data = await res.json();
-            if (data.success) {
+
+            const text = await res.text();
+            let data = null;
+            try {
+              data = JSON.parse(text);
+            } catch (jsonErr) {
+              if (res.status === 404) {
+                throw new Error('Server returned 404. Please refresh your browser or open http://localhost:3000/admin.html');
+              }
+              throw new Error(`Server returned status ${res.status}: ${text.substring(0, 100)}`);
+            }
+
+            if (res.ok && data && data.success) {
               resolve(data);
             } else {
-              reject(new Error(data.error || 'Upload failed'));
+              if (res.status === 401 || (data && data.error && data.error.includes('Unauthorized'))) {
+                AUTH_TOKEN = '';
+                sessionStorage.removeItem('tc_admin_token');
+                document.getElementById('loginModalOverlay').style.display = 'flex';
+                throw new Error('Admin login required. Please log in to upload pictures.');
+              }
+              reject(new Error((data && data.error) || 'Upload failed'));
             }
           } catch (err) {
             reject(err);
