@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
    0. REAL-TIME DATA SYNC FROM SERVER API
    ========================================================================== */
 async function loadServerData() {
-  // 1. Check local browser storage for admin portal modifications (works on GitHub Pages)
+  // 1. Check local browser storage for admin portal modifications (works on GitHub Pages & client edits)
   try {
     const localData = localStorage.getItem('tc_travels_custom_data');
     if (localData) {
@@ -37,6 +37,10 @@ async function loadServerData() {
       const data = await res.json();
       if (data && data.company && data.fleet) {
         window.TC_DATA = data;
+        // Keep localStorage synchronized so subsequent static loads stay fresh
+        try {
+          localStorage.setItem('tc_travels_custom_data', JSON.stringify(data));
+        } catch (_) {}
       }
     }
   } catch (err) {
@@ -60,10 +64,18 @@ function initMobileNavigation() {
 }
 
 /* ==========================================================================
-   2. COMPANY CONTACT LINKS SYNC
+   2. COMPANY CONTACT LINKS & BRAND LOGO SYNC
    ========================================================================== */
 function updateCompanyLinks() {
   const company = (typeof TC_DATA !== 'undefined' && TC_DATA.company) ? TC_DATA.company : {};
+
+  // Dynamically synchronize company brand logo if updated from Admin Portal
+  if (company.logo) {
+    document.querySelectorAll('.brand-logo-circle, .info-side-logo, .brand-logo-img').forEach(img => {
+      img.src = company.logo;
+    });
+  }
+
   const rawPhone = company.phone || "9741422544";
   const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
   const formattedPhone = rawPhone.startsWith('+') ? rawPhone : (rawPhone.length === 10 ? `+91 ${rawPhone}` : rawPhone);

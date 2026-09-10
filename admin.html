@@ -1236,6 +1236,47 @@
   </div>
 
   <!-- ==========================================================================
+       MODAL 4: ASSIGN GALLERY IMAGE TO VEHICLE, TOUR, OR LOGO
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modalAssignImage">
+    <div class="modal-box-card" style="max-width: 520px;">
+      <button type="button" class="modal-close-btn js-modal-close" onclick="closeAssignImageModal()">&times;</button>
+      <h3 class="modal-title">📌 Use Picture on Website</h3>
+      <p class="modal-subtitle">Choose which vehicle, tour, or logo to apply this photo to</p>
+
+      <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 20px; padding: 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+        <img id="assignModalPreview" src="images/tc-travels-logo.jpg" alt="Selected photo" style="width: 64px; height: 64px; object-fit: cover; border-radius: 6px;">
+        <div style="flex: 1; overflow: hidden;">
+          <div id="assignModalFilename" style="font-weight: 700; color: #0F172A; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">photo.jpg</div>
+          <div style="font-size: 0.8rem; color: #64748B;">Select destination below to apply and save immediately to live website.</div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" style="font-weight: 700;">🏢 Company Brand</label>
+        <button type="button" class="btn-action-primary" style="width: 100%; justify-content: space-between; padding: 10px 14px; background: #FFF; color: #0F172A; border: 1px solid #CBD5E1;" onclick="applyAssignedImage('logo', 0)">
+          <span>🏢 Main Company Brand Logo</span>
+          <span style="color: #0284C7; font-weight: 700;">Apply & Save &rarr;</span>
+        </button>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" style="font-weight: 700;">🚗 Fleet Vehicles (vehicles.html & Home Slider)</label>
+        <div id="assignFleetList" style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding-right: 4px;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700;">🗺️ Tour Packages (packages.html & Home Slider)</label>
+        <div id="assignTourList" style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding-right: 4px;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        STICKY BOTTOM SAVE BAR
        ========================================================================== -->
   <div class="sticky-save-bar">
@@ -1853,149 +1894,174 @@
       });
     }
 
+    // Helper to gather all inputs from the current DOM into SITE_DATA
+    function gatherAllFormInputs() {
+      if (!SITE_DATA) return;
+
+      // 1. Gather Company Details
+      SITE_DATA.company = SITE_DATA.company || {};
+      const elPhone = document.getElementById('inpPhone');
+      if (elPhone) SITE_DATA.company.phone = elPhone.value.trim();
+      const elWa = document.getElementById('inpWhatsapp');
+      if (elWa) SITE_DATA.company.whatsappNumber = elWa.value.trim();
+      const elEmail = document.getElementById('inpEmail');
+      if (elEmail) SITE_DATA.company.email = elEmail.value.trim();
+      const elHours = document.getElementById('inpHours');
+      if (elHours) SITE_DATA.company.operatingHours = elHours.value.trim();
+      const elAddr = document.getElementById('inpAddress');
+      if (elAddr) SITE_DATA.company.address = elAddr.value.trim();
+      const elTag = document.getElementById('inpTagline');
+      if (elTag) SITE_DATA.company.tagline = elTag.value.trim();
+      const elKTag = document.getElementById('inpKannadaTagline');
+      if (elKTag) SITE_DATA.company.kannadaTagline = elKTag.value.trim();
+      const logoInpVal = document.getElementById('inpCompanyLogo');
+      if (logoInpVal && logoInpVal.value.trim()) {
+        SITE_DATA.company.logo = logoInpVal.value.trim();
+      }
+
+      // 2. Gather Fleet In-Place Edits
+      document.querySelectorAll('.js-fleet-name').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].name = input.value.trim();
+      });
+      document.querySelectorAll('.js-fleet-category').forEach(select => {
+        const idx = parseInt(select.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].category = select.value;
+      });
+      document.querySelectorAll('.js-fleet-price').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].pricePerKm = input.value.trim();
+      });
+      document.querySelectorAll('.js-fleet-minkm').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].minKmPerDay = input.value.trim();
+      });
+      document.querySelectorAll('.js-fleet-batta').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].driverBatta = input.value.trim();
+      });
+      document.querySelectorAll('.js-fleet-localprice').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].localPackagePrice = input.value.trim();
+      });
+      document.querySelectorAll('.js-fleet-image').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx] && input.value.trim()) {
+          SITE_DATA.fleet[idx].image = input.value.trim();
+        }
+      });
+      document.querySelectorAll('.js-fleet-features').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.fleet[idx]) {
+          SITE_DATA.fleet[idx].features = input.value.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      });
+
+      // 3. Gather Driver In-Place Edits
+      document.querySelectorAll('.js-driver-title').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].title = input.value.trim();
+      });
+      document.querySelectorAll('.js-driver-duration').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].duration = input.value.trim();
+      });
+      document.querySelectorAll('.js-driver-price').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].price = input.value.trim();
+      });
+      document.querySelectorAll('.js-driver-overtime').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].overtime = input.value.trim();
+      });
+      document.querySelectorAll('.js-driver-subtitle').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].subtitle = input.value.trim();
+      });
+
+      // 4. Gather Tour In-Place Edits
+      document.querySelectorAll('.js-tour-title').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].title = input.value.trim();
+      });
+      document.querySelectorAll('.js-tour-price').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].priceStarting = input.value.trim();
+      });
+      document.querySelectorAll('.js-tour-duration').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].duration = input.value.trim();
+      });
+      document.querySelectorAll('.js-tour-image').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].image = input.value.trim();
+      });
+      document.querySelectorAll('.js-tour-places').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.tours[idx]) {
+          SITE_DATA.tours[idx].places = input.value.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      });
+      document.querySelectorAll('.js-tour-highlights').forEach(input => {
+        const idx = parseInt(input.dataset.idx, 10);
+        if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].highlights = input.value.trim();
+      });
+    }
+
+    // Core Save Function (saves to localStorage and syncs with Node server /api/data)
+    async function saveSiteDataToServer(silent = false) {
+      if (!SITE_DATA) return false;
+      gatherAllFormInputs();
+
+      // 1. Immediately write to localStorage so all website pages on this device see it instantly
+      try {
+        localStorage.setItem('tc_travels_custom_data', JSON.stringify(SITE_DATA));
+      } catch (e) {
+        console.warn('Storage warning:', e);
+      }
+
+      // 2. Static host (GitHub Pages, file://, etc.)
+      if (IS_STATIC_HOST) {
+        if (!silent) showToast('✅ Saved! All changes are live on this device.');
+        const exportBtn = document.getElementById('btnExportJson');
+        if (exportBtn) exportBtn.style.display = 'inline-flex';
+        return true;
+      }
+
+      // 3. Node.js backend: POST to /api/data to write to site-data.json and js/data.js
+      try {
+        const res = await fetch('/api/data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(SITE_DATA)
+        });
+        const result = await res.json();
+        if (result.success) {
+          if (!silent) showToast('✅ All changes saved successfully to live website!');
+          return true;
+        } else {
+          if (!silent) alert('Save warning: ' + (result.error || 'Unknown error'));
+          return false;
+        }
+      } catch (err) {
+        if (!silent) showToast('✅ Saved to browser storage!');
+        return true;
+      }
+    }
+
     // 9. Global Save Button Handler
     function setupSaveHandler() {
       const saveBtn = document.getElementById('btnGlobalSave');
+      if (!saveBtn) return;
 
       saveBtn.addEventListener('click', async () => {
-        if (!SITE_DATA) return;
-
-        // 1. Gather Company Details
-        SITE_DATA.company = SITE_DATA.company || {};
-        SITE_DATA.company.phone = document.getElementById('inpPhone').value.trim();
-        SITE_DATA.company.whatsappNumber = document.getElementById('inpWhatsapp').value.trim();
-        SITE_DATA.company.email = document.getElementById('inpEmail').value.trim();
-        SITE_DATA.company.operatingHours = document.getElementById('inpHours').value.trim();
-        SITE_DATA.company.address = document.getElementById('inpAddress').value.trim();
-        SITE_DATA.company.tagline = document.getElementById('inpTagline').value.trim();
-        SITE_DATA.company.kannadaTagline = document.getElementById('inpKannadaTagline').value.trim();
-        const logoInpVal = document.getElementById('inpCompanyLogo');
-        if (logoInpVal && logoInpVal.value.trim()) {
-          SITE_DATA.company.logo = logoInpVal.value.trim();
-        }
-
-        // 2. Gather Fleet In-Place Edits
-        document.querySelectorAll('.js-fleet-name').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].name = input.value.trim();
-        });
-        document.querySelectorAll('.js-fleet-category').forEach(select => {
-          const idx = parseInt(select.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].category = select.value;
-        });
-        document.querySelectorAll('.js-fleet-price').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].pricePerKm = input.value.trim();
-        });
-        document.querySelectorAll('.js-fleet-minkm').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].minKmPerDay = input.value.trim();
-        });
-        document.querySelectorAll('.js-fleet-batta').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].driverBatta = input.value.trim();
-        });
-        document.querySelectorAll('.js-fleet-localprice').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].localPackagePrice = input.value.trim();
-        });
-        document.querySelectorAll('.js-fleet-image').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx] && input.value.trim()) {
-            SITE_DATA.fleet[idx].image = input.value.trim();
-          }
-        });
-        document.querySelectorAll('.js-fleet-features').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.fleet[idx]) {
-            SITE_DATA.fleet[idx].features = input.value.split(',').map(s => s.trim()).filter(Boolean);
-          }
-        });
-
-        // 3. Gather Driver In-Place Edits
-        document.querySelectorAll('.js-driver-title').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].title = input.value.trim();
-        });
-        document.querySelectorAll('.js-driver-duration').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].duration = input.value.trim();
-        });
-        document.querySelectorAll('.js-driver-price').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].price = input.value.trim();
-        });
-        document.querySelectorAll('.js-driver-overtime').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].overtime = input.value.trim();
-        });
-        document.querySelectorAll('.js-driver-subtitle').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].subtitle = input.value.trim();
-        });
-
-        // 4. Gather Tour In-Place Edits
-        document.querySelectorAll('.js-tour-title').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].title = input.value.trim();
-        });
-        document.querySelectorAll('.js-tour-price').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].priceStarting = input.value.trim();
-        });
-        document.querySelectorAll('.js-tour-duration').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].duration = input.value.trim();
-        });
-        document.querySelectorAll('.js-tour-image').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].image = input.value.trim();
-        });
-        document.querySelectorAll('.js-tour-places').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.tours[idx]) {
-            SITE_DATA.tours[idx].places = input.value.split(',').map(s => s.trim()).filter(Boolean);
-          }
-        });
-        document.querySelectorAll('.js-tour-highlights').forEach(input => {
-          const idx = parseInt(input.dataset.idx, 10);
-          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].highlights = input.value.trim();
-        });
-
-        // 5. Save changes
         saveBtn.disabled = true;
         saveBtn.innerText = '⏳ Saving...';
-
         try {
-          if (IS_STATIC_HOST) {
-            localStorage.setItem('tc_travels_custom_data', JSON.stringify(SITE_DATA));
-            showToast('✅ Saved! All changes are live on this device.');
-            const exportBtn = document.getElementById('btnExportJson');
-            if (exportBtn) exportBtn.style.display = 'inline-flex';
-            saveBtn.disabled = false;
-            saveBtn.innerText = '💾 Save All Changes';
-            return;
-          }
-
-          const res = await fetch('/api/data', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${AUTH_TOKEN}`
-            },
-            body: JSON.stringify(SITE_DATA)
-          });
-          const result = await res.json();
-
-          if (result.success) {
-            showToast('✅ All changes saved successfully to live website!');
-          } else {
-            alert('Save failed: ' + (result.error || 'Unknown error'));
-          }
-        } catch (err) {
-          // Fallback to browser storage
-          localStorage.setItem('tc_travels_custom_data', JSON.stringify(SITE_DATA));
-          showToast('✅ Saved to browser storage!');
+          await saveSiteDataToServer(false);
         } finally {
           saveBtn.disabled = false;
           saveBtn.innerText = '💾 Save All Changes';
@@ -2379,11 +2445,12 @@
         if (SITE_DATA && SITE_DATA.fleet && SITE_DATA.fleet[idx]) {
           SITE_DATA.fleet[idx].image = res.url;
         }
+        await saveSiteDataToServer(true);
         if (status) {
-          status.innerText = '✅ Uploaded!';
-          setTimeout(() => { if (status.innerText === '✅ Uploaded!') status.style.display = 'none'; }, 3500);
+          status.innerText = '✅ Saved to Website!';
+          setTimeout(() => { if (status.innerText === '✅ Saved to Website!') status.style.display = 'none'; }, 3500);
         }
-        showToast('Car picture uploaded! Click "Save All Changes" to publish to live site.');
+        showToast('✅ Car picture updated and saved to live website!');
         loadGalleryImages();
       } catch (err) {
         alert('Upload failed: ' + err.message);
@@ -2411,11 +2478,12 @@
         if (SITE_DATA && SITE_DATA.tours && SITE_DATA.tours[idx]) {
           SITE_DATA.tours[idx].image = res.url;
         }
+        await saveSiteDataToServer(true);
         if (status) {
-          status.innerText = '✅ Uploaded!';
-          setTimeout(() => { if (status.innerText === '✅ Uploaded!') status.style.display = 'none'; }, 3500);
+          status.innerText = '✅ Saved to Website!';
+          setTimeout(() => { if (status.innerText === '✅ Saved to Website!') status.style.display = 'none'; }, 3500);
         }
-        showToast('Tour picture uploaded! Click "Save All Changes" to publish to live site.');
+        showToast('✅ Tour picture updated and saved to live website!');
         loadGalleryImages();
       } catch (err) {
         alert('Upload failed: ' + err.message);
@@ -2443,11 +2511,12 @@
         if (SITE_DATA && SITE_DATA.company) {
           SITE_DATA.company.logo = res.url;
         }
+        await saveSiteDataToServer(true);
         if (status) {
-          status.innerText = '✅ Logo Uploaded!';
-          setTimeout(() => { if (status.innerText === '✅ Logo Uploaded!') status.style.display = 'none'; }, 3500);
+          status.innerText = '✅ Saved to Website!';
+          setTimeout(() => { if (status.innerText === '✅ Saved to Website!') status.style.display = 'none'; }, 3500);
         }
-        showToast('Brand logo picture uploaded successfully! Click "Save All Changes" to publish.');
+        showToast('✅ Brand logo picture updated and saved to live website!');
         loadGalleryImages();
       } catch (err) {
         alert('Logo upload failed: ' + err.message);
@@ -2538,9 +2607,12 @@
                   ${img.isUpload ? '⭐ Custom Upload' : '📁 System Asset'}
                 </span>
               </div>
-              <div style="display: flex; gap: 6px; align-items: center;">
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                 <button type="button" class="btn-copy-url" onclick="copyImageUrl('${img.url}')">
                   📋 Copy Path
+                </button>
+                <button type="button" class="btn-action-primary" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; background: #0284C7; color: #FFF; border: none; cursor: pointer; font-weight: 700;" onclick="openAssignImageModal('${encodeURIComponent(img.url)}', '${encodeURIComponent(img.name)}')">
+                  📌 Use On...
                 </button>
                 ${img.isUpload ? `
                 <button type="button" class="btn-action-danger" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; background: #FEE2E2; color: #DC2626; cursor: pointer; font-weight: 700;" onclick="deleteCustomUpload('${encodeURIComponent(img.name)}', '${encodeURIComponent(img.url)}')" title="Delete this uploaded picture">
@@ -2652,6 +2724,87 @@
       } finally {
         _repairingHeic = false;
       }
+    }
+
+    // Assign picture from gallery directly to Vehicle, Tour, or Logo
+    let _assigningImageUrl = '';
+    let _assigningImageName = '';
+
+    function openAssignImageModal(encUrl, encName) {
+      _assigningImageUrl = decodeURIComponent(encUrl);
+      _assigningImageName = decodeURIComponent(encName);
+
+      const modal = document.getElementById('modalAssignImage');
+      const prev = document.getElementById('assignModalPreview');
+      const fn = document.getElementById('assignModalFilename');
+      if (prev) prev.src = _assigningImageUrl;
+      if (fn) fn.innerText = _assigningImageName;
+
+      // Populate fleet list
+      const fleetList = document.getElementById('assignFleetList');
+      if (fleetList && SITE_DATA && Array.isArray(SITE_DATA.fleet)) {
+        fleetList.innerHTML = SITE_DATA.fleet.map((car, idx) => `
+          <button type="button" class="btn-action-primary" style="width: 100%; justify-content: space-between; padding: 8px 12px; background: #FFF; color: #0F172A; border: 1px solid #CBD5E1; font-size: 0.88rem;" onclick="applyAssignedImage('fleet', ${idx})">
+            <span>🚗 <strong>${car.name}</strong> (${car.categoryLabel})</span>
+            <span style="color: #0284C7; font-weight: 700;">Apply & Save &rarr;</span>
+          </button>
+        `).join('');
+      }
+
+      // Populate tour list
+      const tourList = document.getElementById('assignTourList');
+      if (tourList && SITE_DATA && Array.isArray(SITE_DATA.tours)) {
+        tourList.innerHTML = SITE_DATA.tours.map((tour, idx) => `
+          <button type="button" class="btn-action-primary" style="width: 100%; justify-content: space-between; padding: 8px 12px; background: #FFF; color: #0F172A; border: 1px solid #CBD5E1; font-size: 0.88rem;" onclick="applyAssignedImage('tour', ${idx})">
+            <span>🗺️ <strong>${tour.title}</strong></span>
+            <span style="color: #0284C7; font-weight: 700;">Apply & Save &rarr;</span>
+          </button>
+        `).join('');
+      }
+
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeAssignImageModal() {
+      const modal = document.getElementById('modalAssignImage');
+      if (modal) modal.classList.remove('open');
+    }
+
+    async function applyAssignedImage(type, idx) {
+      if (!_assigningImageUrl || !SITE_DATA) return;
+
+      if (type === 'logo') {
+        SITE_DATA.company = SITE_DATA.company || {};
+        SITE_DATA.company.logo = _assigningImageUrl;
+        const logoInp = document.getElementById('inpCompanyLogo');
+        const logoPrev = document.getElementById('companyLogoPrev');
+        if (logoInp) logoInp.value = _assigningImageUrl;
+        if (logoPrev) logoPrev.src = _assigningImageUrl;
+        await saveSiteDataToServer(true);
+        showToast('✅ Brand logo updated and saved to live website!');
+      } else if (type === 'fleet') {
+        if (SITE_DATA.fleet && SITE_DATA.fleet[idx]) {
+          SITE_DATA.fleet[idx].image = _assigningImageUrl;
+          const carInput = document.getElementById(`fleetImgInput_${idx}`);
+          const carPrev = document.getElementById(`fleetImgPrev_${idx}`);
+          if (carInput) carInput.value = _assigningImageUrl;
+          if (carPrev) carPrev.src = _assigningImageUrl;
+          await saveSiteDataToServer(true);
+          showToast(`✅ Photo assigned to "${SITE_DATA.fleet[idx].name}" and saved to live website!`);
+        }
+      } else if (type === 'tour') {
+        if (SITE_DATA.tours && SITE_DATA.tours[idx]) {
+          SITE_DATA.tours[idx].image = _assigningImageUrl;
+          const tourInput = document.getElementById(`pkgImgInput_${idx}`);
+          const tourPrev = document.getElementById(`pkgImgPrev_${idx}`);
+          if (tourInput) tourInput.value = _assigningImageUrl;
+          if (tourPrev) tourPrev.src = _assigningImageUrl;
+          await saveSiteDataToServer(true);
+          showToast(`✅ Photo assigned to "${SITE_DATA.tours[idx].title}" and saved to live website!`);
+        }
+      }
+
+      closeAssignImageModal();
     }
 
     function copyImageUrl(url) {
