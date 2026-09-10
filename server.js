@@ -237,7 +237,7 @@ function createServer() {
 
           const rawFilename = (payload.filename || 'photo.jpg').trim();
           const parsedExt = path.extname(rawFilename).toLowerCase() || '.jpg';
-          const validExts = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'];
+          const validExts = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif', '.jfif', '.avif', '.bmp'];
           const ext = validExts.includes(parsedExt) ? parsedExt : '.jpg';
           
           const rawBaseName = path.basename(rawFilename, parsedExt).replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
@@ -246,7 +246,7 @@ function createServer() {
           const targetPath = path.join(uploadDir, safeFilename);
 
           // Strip Data URI prefix if present
-          const base64Content = payload.data.replace(/^data:image\/\w+;base64,/, '');
+          const base64Content = payload.data.replace(/^data:[^;]+;base64,/, '');
           const buffer = Buffer.from(base64Content, 'base64');
 
           fs.writeFileSync(targetPath, buffer);

@@ -831,16 +831,19 @@
             <h3>🎨 Website Logo</h3>
           </div>
           <div class="image-uploader-card">
-            <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo" class="img-preview-thumb" id="companyLogoPrev" style="background: #FFF; object-fit: contain;">
-            <div class="uploader-actions">
+            <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo" class="img-preview-thumb" id="companyLogoPrev" style="background: #FFF; object-fit: contain;" onerror="this.src='images/tc-travels-logo.jpg'">
+            <div class="uploader-actions" style="flex: 1;">
               <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <label class="btn-file-upload-label">
                   📷 Upload New Logo Picture
-                  <input type="file" accept="image/*" style="display: none;" onchange="uploadLogoImage(event)">
+                  <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.svg,.jfif,.bmp,.gif" style="display: none;" onchange="uploadLogoImage(event)">
                 </label>
                 <span id="logoUploadStatus" class="upload-progress-text">✅ Logo Uploaded!</span>
               </div>
-              <p style="font-size: 0.78rem; color: #64748B;">Upload your official travel logo. It will update the brand logo on header and login screens.</p>
+              <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                <input type="text" id="inpCompanyLogo" class="form-input" placeholder="Or paste logo image URL (https://... or images/...)" style="font-size: 0.85rem; padding: 7px 10px;" oninput="updateImagePreview('companyLogoPrev', this.value)" onchange="updateImagePreview('companyLogoPrev', this.value)">
+              </div>
+              <div class="help-hint" style="margin-top: 4px;">Upload a logo photo from your device OR paste any direct image web link.</div>
             </div>
           </div>
         </div>
@@ -1473,6 +1476,11 @@
       document.getElementById('inpTagline').value = c.tagline || '';
       document.getElementById('inpKannadaTagline').value = c.kannadaTagline || '';
 
+      const logoInp = document.getElementById('inpCompanyLogo');
+      if (logoInp) logoInp.value = c.logo || '';
+      const logoPrev = document.getElementById('companyLogoPrev');
+      if (logoPrev && c.logo) logoPrev.src = c.logo;
+
       renderVehiclesEditor();
       renderDriversEditor();
       renderPackagesEditor();
@@ -1540,20 +1548,21 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Car Picture</label>
+            <label class="form-label">Car Picture (Upload image file OR paste web image URL)</label>
             <div class="image-uploader-card">
-              <img src="${car.image || 'images/maruti-dzire.jpg'}" alt="${car.name}" class="img-preview-thumb" id="fleetImgPrev_${idx}">
-              <div class="uploader-actions">
+              <img src="${car.image || 'images/maruti-dzire.jpg'}" alt="${car.name}" class="img-preview-thumb" id="fleetImgPrev_${idx}" onerror="this.src='images/tc-travels-logo.jpg'">
+              <div class="uploader-actions" style="flex: 1;">
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                   <label class="btn-file-upload-label">
-                    📷 Upload New Car Picture
-                    <input type="file" accept="image/*" style="display: none;" onchange="uploadFleetCarImage(event, ${idx})">
+                    📷 Upload Image File
+                    <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.svg,.jfif,.bmp,.gif" style="display: none;" onchange="uploadFleetCarImage(event, ${idx})">
                   </label>
                   <span id="fleetUploadStatus_${idx}" class="upload-progress-text">✅ Image Updated!</span>
                 </div>
-                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
-                  <input type="text" class="form-input js-fleet-image" id="fleetImgInput_${idx}" data-idx="${idx}" value="${car.image || ''}" placeholder="Image path or URL" style="font-size: 0.8rem; padding: 6px 10px;" oninput="updateImagePreview('fleetImgPrev_${idx}', this.value)">
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                  <input type="text" class="form-input js-fleet-image" id="fleetImgInput_${idx}" data-idx="${idx}" value="${car.image || ''}" placeholder="Paste image URL (https://... or images/...)" style="font-size: 0.85rem; padding: 7px 10px;" oninput="onImageInputUrlChange('fleet', ${idx}, this.value)" onchange="onImageInputUrlChange('fleet', ${idx}, this.value)">
                 </div>
+                <div class="help-hint" style="margin-top: 4px;">Supports device photo upload OR direct web image link (Google, Unsplash, etc.)</div>
               </div>
             </div>
           </div>
@@ -1653,20 +1662,21 @@
             </div>
 
           <div class="form-group">
-            <label class="form-label">Tour Photo</label>
+            <label class="form-label">Tour Photo (Upload image file OR paste web image URL)</label>
             <div class="image-uploader-card">
-              <img src="${t.image || 'images/mysore-palace.jpg'}" alt="${t.title}" class="img-preview-thumb" id="pkgImgPrev_${idx}">
-              <div class="uploader-actions">
+              <img src="${t.image || 'images/mysore-palace.jpg'}" alt="${t.title}" class="img-preview-thumb" id="pkgImgPrev_${idx}" onerror="this.src='images/mysore-palace.jpg'">
+              <div class="uploader-actions" style="flex: 1;">
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                   <label class="btn-file-upload-label">
-                    📷 Upload New Tour Picture
-                    <input type="file" accept="image/*" style="display: none;" onchange="uploadPackageTourImage(event, ${idx})">
+                    📷 Upload Image File
+                    <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.svg,.jfif,.bmp,.gif" style="display: none;" onchange="uploadPackageTourImage(event, ${idx})">
                   </label>
                   <span id="pkgUploadStatus_${idx}" class="upload-progress-text">✅ Image Updated!</span>
                 </div>
-                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
-                  <input type="text" class="form-input js-tour-image" id="pkgImgInput_${idx}" data-idx="${idx}" value="${t.image || ''}" placeholder="Image path or URL" style="font-size: 0.8rem; padding: 6px 10px;" oninput="updateImagePreview('pkgImgPrev_${idx}', this.value)">
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                  <input type="text" class="form-input js-tour-image" id="pkgImgInput_${idx}" data-idx="${idx}" value="${t.image || ''}" placeholder="Paste image URL (https://... or images/...)" style="font-size: 0.85rem; padding: 7px 10px;" oninput="onImageInputUrlChange('tour', ${idx}, this.value)" onchange="onImageInputUrlChange('tour', ${idx}, this.value)">
                 </div>
+                <div class="help-hint" style="margin-top: 4px;">Supports device photo upload OR direct web image link.</div>
               </div>
             </div>
           </div>
@@ -1857,6 +1867,10 @@
         SITE_DATA.company.address = document.getElementById('inpAddress').value.trim();
         SITE_DATA.company.tagline = document.getElementById('inpTagline').value.trim();
         SITE_DATA.company.kannadaTagline = document.getElementById('inpKannadaTagline').value.trim();
+        const logoInpVal = document.getElementById('inpCompanyLogo');
+        if (logoInpVal && logoInpVal.value.trim()) {
+          SITE_DATA.company.logo = logoInpVal.value.trim();
+        }
 
         // 2. Gather Fleet In-Place Edits
         document.querySelectorAll('.js-fleet-name').forEach(input => {
@@ -2054,90 +2068,151 @@
     // IMAGE UPLOAD & GALLERY FUNCTIONS
     // =========================================================================
 
-    // Universal Base64 Upload function (works on GitHub Pages & Node.js Server)
-    async function uploadImageFile(file) {
-      if (!file) throw new Error('No file provided');
-      if (!file.type.startsWith('image/')) throw new Error('Selected file must be an image (JPG, PNG, WEBP, SVG)');
-
-      // GITHUB PAGES / STATIC HOST: Convert to Base64 Data URL directly
-      if (IS_STATIC_HOST) {
+    // Helper to auto-resize and compress photos for web use to guarantee fast loading & safety
+    async function compressImageForWeb(file) {
+      // SVGs don't need raster compression
+      if ((file.type && file.type.includes('svg')) || (file.name && file.name.toLowerCase().endsWith('.svg'))) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = () => {
-            const base64Data = reader.result;
-            try {
-              const customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
-              customGallery.unshift({ name: file.name, url: base64Data, isUpload: true });
-              if (customGallery.length > 50) customGallery.pop();
-              localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
-            } catch (e) {}
-
-            resolve({
-              success: true,
-              url: base64Data,
-              filename: file.name,
-              sizeKb: Math.round(file.size / 1024)
-            });
-          };
-          reader.onerror = () => reject(new Error('Failed to read image file'));
+          reader.onload = () => resolve({ dataUrl: reader.result, width: 0, height: 0 });
+          reader.onerror = () => reject(new Error('Failed to read SVG file'));
           reader.readAsDataURL(file);
         });
       }
 
-      // LOCAL NODE.JS SERVER: Send to /api/upload
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const base64Data = reader.result;
-            const res = await fetch('/api/upload', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${AUTH_TOKEN}`
-              },
-              body: JSON.stringify({
-                filename: file.name,
-                data: base64Data
-              })
-            });
+        reader.onload = () => {
+          const rawUrl = reader.result;
+          const img = new Image();
+          img.onload = () => {
+            const MAX_DIM = 1200;
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
 
-            const text = await res.text();
-            let data = null;
+            if (w > MAX_DIM || h > MAX_DIM) {
+              if (w > h) {
+                h = Math.round((h * MAX_DIM) / w);
+                w = MAX_DIM;
+              } else {
+                w = Math.round((w * MAX_HEIGHT) / h);
+                h = MAX_DIM;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+
             try {
-              data = JSON.parse(text);
-            } catch (jsonErr) {
-              if (res.status === 404) {
-                throw new Error('Upload endpoint returned 404.');
-              }
-              throw new Error(`Server returned status ${res.status}: ${text.substring(0, 100)}`);
+              const compressed = canvas.toDataURL('image/jpeg', 0.85);
+              resolve({ dataUrl: compressed, width: w, height: h });
+            } catch (err) {
+              resolve({ dataUrl: rawUrl, width: w, height: h });
             }
-
-            if (res.ok && data && data.success) {
-              resolve(data);
-            } else {
-              if (res.status === 401 || (data && data.error && data.error.includes('Unauthorized'))) {
-                AUTH_TOKEN = '';
-                sessionStorage.removeItem('tc_admin_token');
-                document.getElementById('loginModalOverlay').style.display = 'flex';
-                throw new Error('Admin login required. Please log in to upload pictures.');
-              }
-              reject(new Error((data && data.error) || 'Upload failed'));
-            }
-          } catch (err) {
-            reject(err);
-          }
+          };
+          img.onerror = () => {
+            // Fallback to raw data URL if canvas cannot decode
+            resolve({ dataUrl: rawUrl, width: 0, height: 0 });
+          };
+          img.src = rawUrl;
         };
-        reader.onerror = () => reject(new Error('Failed to read image file from disk'));
+        reader.onerror = () => reject(new Error('Failed to read image file from device'));
         reader.readAsDataURL(file);
       });
+    }
+
+    // Universal Base64 Upload function (works on GitHub Pages & Node.js Server)
+    async function uploadImageFile(file) {
+      if (!file) throw new Error('No file provided');
+
+      // Comprehensive format validation: accept image MIME type, file extensions, or empty MIME
+      const fileName = (file.name || '').toLowerCase();
+      const mimeType = (file.type || '').toLowerCase();
+      const hasImageExt = /\.(jpe?g|png|webp|svg|jfif|gif|avif|bmp|ico|heic|heif)$/i.test(fileName);
+      const isImageMime = mimeType.startsWith('image/') || mimeType.includes('octet-stream') || mimeType === '';
+
+      if (!hasImageExt && !isImageMime) {
+        throw new Error('Please select an image file (JPG, PNG, WEBP, SVG, JFIF)');
+      }
+
+      // Optimize image for fast web performance & storage safety
+      const { dataUrl } = await compressImageForWeb(file);
+
+      // GITHUB PAGES / STATIC HOST: Save to localStorage & gallery
+      if (IS_STATIC_HOST) {
+        try {
+          const customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+          customGallery.unshift({ name: file.name, url: dataUrl, isUpload: true });
+          if (customGallery.length > 30) customGallery.pop();
+          localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+        } catch (e) {
+          console.warn('Storage warning:', e);
+        }
+
+        return {
+          success: true,
+          url: dataUrl,
+          filename: file.name
+        };
+      }
+
+      // LOCAL NODE.JS SERVER: Send to /api/upload
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${AUTH_TOKEN}`
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          data: dataUrl
+        })
+      });
+
+      const text = await res.text();
+      let data = null;
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        throw new Error(`Server returned status ${res.status}`);
+      }
+
+      if (res.ok && data && data.success) {
+        return data;
+      } else {
+        throw new Error((data && data.error) || 'Upload failed');
+      }
     }
 
     // Live preview updater
     function updateImagePreview(previewId, val) {
       const img = document.getElementById(previewId);
-      if (img && val) {
-        img.src = val;
+      if (img) {
+        val = (val || '').trim();
+        if (val) {
+          img.src = val;
+        }
+      }
+    }
+
+    // Handler for typing or pasting URL into vehicle/tour image input
+    function onImageInputUrlChange(type, idx, val) {
+      val = (val || '').trim();
+      if (type === 'fleet') {
+        const preview = document.getElementById(`fleetImgPrev_${idx}`);
+        if (preview && val) preview.src = val;
+        if (SITE_DATA && SITE_DATA.fleet && SITE_DATA.fleet[idx]) {
+          SITE_DATA.fleet[idx].image = val;
+        }
+      } else if (type === 'tour') {
+        const preview = document.getElementById(`pkgImgPrev_${idx}`);
+        if (preview && val) preview.src = val;
+        if (SITE_DATA && SITE_DATA.tours && SITE_DATA.tours[idx]) {
+          SITE_DATA.tours[idx].image = val;
+        }
       }
     }
 
@@ -2256,9 +2331,14 @@
       try {
         const res = await uploadImageFile(file);
         const preview = document.getElementById('companyLogoPrev');
+        const input = document.getElementById('inpCompanyLogo');
         if (preview) preview.src = res.url;
+        if (input) input.value = res.url;
+        if (SITE_DATA && SITE_DATA.company) {
+          SITE_DATA.company.logo = res.url;
+        }
         if (status) status.innerText = '✅ Logo Uploaded!';
-        showToast('Brand logo picture uploaded successfully!');
+        showToast('Brand logo picture uploaded successfully! Click "Save All Changes" to publish.');
         loadGalleryImages();
       } catch (err) {
         alert('Logo upload failed: ' + err.message);
