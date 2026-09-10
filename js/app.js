@@ -7,28 +7,53 @@
 document.addEventListener('DOMContentLoaded', async () => {
   await loadServerData();
   initMobileNavigation();
+  renderAllDynamicComponents();
+  initContactForm();
+});
+
+/* Real-time cross-tab synchronizer: When Admin tab modifies data, other open website tabs update immediately */
+window.addEventListener('storage', (e) => {
+  if (e.key === 'tc_travels_custom_data' && e.newValue) {
+    try {
+      const updated = JSON.parse(e.newValue);
+      if (updated && updated.fleet) {
+        window.TC_DATA = updated;
+        if (typeof TC_DATA !== 'undefined') {
+          try { Object.assign(TC_DATA, updated); } catch (_) {}
+        }
+        renderAllDynamicComponents();
+      }
+    } catch (_) {}
+  }
+});
+
+function renderAllDynamicComponents() {
   initHomePackageCarousel();
   initVehiclesCatalog();
   initTourPackagesPage();
   initDriverServicesPage();
-  initContactForm();
   updateCompanyLinks();
-});
+}
 
 /* ==========================================================================
-   0. REAL-TIME DATA SYNC FROM SERVER API
+   0. REAL-TIME DATA SYNC FROM LOCALSTORAGE OR SERVER API
    ========================================================================== */
 async function loadServerData() {
-  // 1. Check local browser storage for admin portal modifications (works on GitHub Pages & client edits)
+  // 1. Check local browser storage for admin portal modifications (works immediately on GitHub Pages & live edits)
   try {
     const localData = localStorage.getItem('tc_travels_custom_data');
     if (localData) {
       const parsed = JSON.parse(localData);
       if (parsed && parsed.company && parsed.fleet) {
         window.TC_DATA = parsed;
+        if (typeof TC_DATA !== 'undefined') {
+          try { Object.assign(TC_DATA, parsed); } catch (_) {}
+        }
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Local storage sync error:', e);
+  }
 
   // 2. If running on Node.js backend or relative API, sync latest server data
   try {
@@ -37,6 +62,9 @@ async function loadServerData() {
       const data = await res.json();
       if (data && data.company && data.fleet) {
         window.TC_DATA = data;
+        if (typeof TC_DATA !== 'undefined') {
+          try { Object.assign(TC_DATA, data); } catch (_) {}
+        }
         // Keep localStorage synchronized so subsequent static loads stay fresh
         try {
           localStorage.setItem('tc_travels_custom_data', JSON.stringify(data));
@@ -46,6 +74,20 @@ async function loadServerData() {
   } catch (err) {
     // Graceful fallback to static TC_DATA
   }
+}
+
+/**
+ * Universal Data Accessor
+ * Always prioritizes the actively modified data from window.TC_DATA or localStorage
+ */
+function getActiveData() {
+  if (typeof window !== 'undefined' && window.TC_DATA && window.TC_DATA.fleet) {
+    return window.TC_DATA;
+  }
+  if (typeof TC_DATA !== 'undefined' && TC_DATA && TC_DATA.fleet) {
+    return TC_DATA;
+  }
+  return {};
 }
 
 /* ==========================================================================
@@ -67,7 +109,8 @@ function initMobileNavigation() {
    2. COMPANY CONTACT LINKS & BRAND LOGO SYNC
    ========================================================================== */
 function updateCompanyLinks() {
-  const company = (typeof TC_DATA !== 'undefined' && TC_DATA.company) ? TC_DATA.company : {};
+  const data = getActiveData();
+  const company = data.company || {};
 
   // Dynamically synchronize company brand logo if updated from Admin Portal
   if (company.logo) {
@@ -96,9 +139,8 @@ function updateCompanyLinks() {
 }
 
 function getActiveWhatsAppNumber() {
-  return (typeof TC_DATA !== 'undefined' && TC_DATA.company && TC_DATA.company.whatsappNumber) 
-    ? TC_DATA.company.whatsappNumber 
-    : "919741422544";
+  const company = getActiveData().company || {};
+  return company.whatsappNumber || "919741422544";
 }
 
 /* ==========================================================================
@@ -111,10 +153,10 @@ function initHomePackageCarousel() {
   const dotsContainer = document.getElementById('sliderDotsRow');
   const carouselWrapper = document.getElementById('packageCarousel');
 
-  if (!track || typeof TC_DATA === 'undefined') return;
+  if (!track) return;
 
-  // Dynamically render slides from TC_DATA.tours + Fleet slide + Driver slide
-  const tours = TC_DATA.tours || [];
+  const data = getActiveData();
+  const tours = data.tours || [];
   let slidesHtml = tours.map(tour => `
     <div class="carousel-slide">
       <div class="slide-img-box">
@@ -144,10 +186,12 @@ function initHomePackageCarousel() {
   `).join('');
 
   // Add Outstation Fleet Slide
+  const sampleSuv = (data.fleet || []).find(c => c.category === 'suv') || {};
+  const suvImg = sampleSuv.image || 'images/innova-crysta.jpg';
   slidesHtml += `
     <div class="carousel-slide">
       <div class="slide-img-box">
-        <img src="images/innova-crysta.jpg" alt="Per-KM Vehicle Rentals" class="slide-img" loading="lazy">
+        <img src="${suvImg}" alt="Per-KM Vehicle Rentals" class="slide-img" loading="lazy">
         <span class="slide-badge-category">Vehicle Rentals (Per-KM)</span>
       </div>
       <div class="slide-content-box">
@@ -179,10 +223,12 @@ function initHomePackageCarousel() {
   `;
 
   // Add Personal Driver Slide
+  const sampleSedan = (data.fleet || [])[0] || {};
+  const sedanImg = sampleSedan.image || 'images/maruti-dzire.jpg';
   slidesHtml += `
     <div class="carousel-slide">
       <div class="slide-img-box">
-        <img src="images/maruti-dzire.jpg" alt="Personal Driver for Your Car" class="slide-img" loading="lazy">
+        <img src="${sedanImg}" alt="Personal Driver for Your Car" class="slide-img" loading="lazy">
         <span class="slide-badge-category">Acting Driver Service</span>
       </div>
       <div class="slide-content-box">
@@ -341,12 +387,14 @@ function initHomePackageCarousel() {
 function initVehiclesCatalog() {
   const container = document.getElementById('vehiclesCatalogGrid');
   const tabsContainer = document.getElementById('vehicleFilterTabs');
-  if (!container || typeof TC_DATA === 'undefined') return;
+  if (!container) return;
 
   function renderVehicles(category = 'all') {
+    const data = getActiveData();
+    const fleet = data.fleet || [];
     const list = category === 'all' 
-      ? TC_DATA.fleet 
-      : TC_DATA.fleet.filter(c => c.category === category);
+      ? fleet 
+      : fleet.filter(c => c.category === category);
 
     if (list.length === 0) {
       container.innerHTML = '<div style="padding: 30px; text-align: center; color: #64748B; background: #FFF; border-radius: 8px;">No vehicles in this category.</div>';
@@ -409,9 +457,10 @@ function initVehiclesCatalog() {
    ========================================================================== */
 function initTourPackagesPage() {
   const container = document.getElementById('tourPackagesContainer');
-  if (!container || typeof TC_DATA === 'undefined') return;
+  if (!container) return;
 
-  const tours = TC_DATA.tours || [];
+  const data = getActiveData();
+  const tours = data.tours || [];
   if (tours.length === 0) {
     container.innerHTML = '<div style="padding: 40px; text-align: center; color: #64748B;">No tour packages available at the moment.</div>';
     return;
@@ -458,9 +507,10 @@ function initTourPackagesPage() {
    ========================================================================== */
 function initDriverServicesPage() {
   const container = document.getElementById('driverServicesContainer');
-  if (!container || typeof TC_DATA === 'undefined') return;
+  if (!container) return;
 
-  const services = TC_DATA.driverServices || [];
+  const data = getActiveData();
+  const services = data.driverServices || [];
   if (services.length === 0) {
     container.innerHTML = '<div style="padding: 40px; text-align: center; color: #64748B;">No driver services listed.</div>';
     return;

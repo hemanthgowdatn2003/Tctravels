@@ -1277,6 +1277,38 @@
   </div>
 
   <!-- ==========================================================================
+       MODAL 5: 1-CLICK PUBLISH DIRECTLY TO GITHUB REPOSITORY & GITHUB PAGES
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modalGitHubPublish">
+    <div class="modal-box-card" style="max-width: 540px;">
+      <button type="button" class="modal-close-btn js-modal-close" onclick="closeGithubPublishModal()">&times;</button>
+      <h3 class="modal-title">🚀 Publish Directly to GitHub Pages</h3>
+      <p class="modal-subtitle">Commit your updated images, fleet, and rates directly to <strong>hemanthgowdatn2003/Tctravels</strong> so everyone visiting your live website sees the changes!</p>
+
+      <div style="padding: 12px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; margin-bottom: 16px; font-size: 0.86rem; color: #166534; line-height: 1.5;">
+        ✅ <strong>Zero Command Line Needed:</strong> This sends your latest <code>js/data.js</code> and <code>site-data.json</code> straight to GitHub. GitHub Actions will deploy your live website in ~30 seconds.
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label">GitHub Personal Access Token (PAT)</label>
+        <input type="password" class="form-input" id="inpGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family: monospace;">
+        <div class="help-hint" style="margin-top: 6px;">
+          Need a token? <a href="https://github.com/settings/tokens/new?scopes=repo&description=TC+Travels+Admin+Sync" target="_blank" style="color: #0284C7; font-weight: 700;">Click here to generate a GitHub Token</a> with <code>repo</code> scope. Your token is safely saved in your browser.
+        </div>
+      </div>
+
+      <div id="githubPublishStatus" style="display: none; padding: 10px; border-radius: 6px; font-size: 0.86rem; margin-bottom: 14px;"></div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn-action-primary" style="background: #E2E8F0; color: #334155; border: none;" onclick="closeGithubPublishModal()">Cancel</button>
+        <button type="button" class="btn-action-primary" id="btnDoPublishGithub" style="background: #16A34A; color: #FFF; font-weight: 800; border: none;" onclick="doPublishToGitHub()">
+          🚀 Publish Now to GitHub
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        STICKY BOTTOM SAVE BAR
        ========================================================================== -->
   <div class="sticky-save-bar">
@@ -1286,9 +1318,15 @@
         Clicking save updates the live website across all pages immediately.
       </span>
     </div>
-    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-      <button type="button" class="btn-action-primary" id="btnExportJson" onclick="exportDataJson()" style="display: none; background: #0284C7;">
-        📥 Download site-data.json
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      <button type="button" class="btn-action-primary" id="btnExportJs" onclick="exportDataJs()" style="background: #0284C7; font-size: 0.85rem; padding: 9px 14px;" title="Download js/data.js to replace in your project">
+        📥 Download data.js
+      </button>
+      <button type="button" class="btn-action-primary" id="btnExportJson" onclick="exportDataJson()" style="background: #334155; font-size: 0.85rem; padding: 9px 14px;" title="Export JSON file">
+        📥 Export JSON
+      </button>
+      <button type="button" class="btn-action-primary" id="btnPublishGithub" onclick="openGithubPublishModal()" style="background: #16A34A; font-size: 0.85rem; padding: 9px 14px; font-weight: 800;" title="Push all changes directly to GitHub repository">
+        🚀 Publish to GitHub
       </button>
       <button type="button" class="btn-save-all" id="btnGlobalSave">
         💾 Save All Changes
@@ -2016,11 +2054,31 @@
       // 1. Immediately write to localStorage so all website pages on this device see it instantly
       try {
         localStorage.setItem('tc_travels_custom_data', JSON.stringify(SITE_DATA));
-      } catch (e) {
-        console.warn('Storage warning:', e);
+      } catch (storageErr) {
+        console.warn('Storage quota error, attempting auto-recovery:', storageErr);
+        try {
+          // Free storage quota by trimming custom gallery history
+          const gallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+          if (gallery.length > 5) {
+            localStorage.setItem('tc_custom_gallery', JSON.stringify(gallery.slice(0, 5)));
+          }
+          localStorage.setItem('tc_travels_custom_data', JSON.stringify(SITE_DATA));
+        } catch (retryErr) {
+          console.error('Failed to write to localStorage:', retryErr);
+        }
       }
 
-      // 2. Static host (GitHub Pages, file://, etc.)
+      // 2. Synchronize in-memory window.TC_DATA & trigger cross-tab storage event
+      try {
+        if (typeof window !== 'undefined') {
+          window.TC_DATA = JSON.parse(JSON.stringify(SITE_DATA));
+          if (typeof TC_DATA !== 'undefined') {
+            try { Object.assign(TC_DATA, SITE_DATA); } catch (_) {}
+          }
+        }
+      } catch (_) {}
+
+      // 3. Static host (GitHub Pages, file://, etc.)
       if (IS_STATIC_HOST) {
         if (!silent) showToast('✅ Saved! All changes are live on this device.');
         const exportBtn = document.getElementById('btnExportJson');
@@ -2132,6 +2190,141 @@
       showToast('📥 Downloaded site-data.json!');
     }
 
+    // Export data as ready-to-use js/data.js (for direct project drop-in or GitHub commit)
+    function exportDataJs() {
+      if (!SITE_DATA) return;
+      const jsContent = `/**\n * TC Travels Mysore - Data Store\n * Automatically synchronized via Admin Portal\n */\n\nvar TC_DATA = ${JSON.stringify(SITE_DATA, null, 2)};\n\nif (typeof window !== 'undefined') {\n  window.TC_DATA = TC_DATA;\n}\nif (typeof module !== 'undefined') {\n  module.exports = TC_DATA;\n}\n`;
+      const blob = new Blob([jsContent], { type: 'application/javascript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'data.js';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('📥 Downloaded js/data.js! You can replace js/data.js in your project.');
+    }
+
+    // Modal & Direct Publish API to GitHub Repository (hemanthgowdatn2003/Tctravels)
+    function openGithubPublishModal() {
+      const modal = document.getElementById('modalGitHubPublish');
+      const tokenInput = document.getElementById('inpGithubToken');
+      const savedToken = localStorage.getItem('tc_github_token') || '';
+      if (tokenInput) tokenInput.value = savedToken;
+      const status = document.getElementById('githubPublishStatus');
+      if (status) status.style.display = 'none';
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeGithubPublishModal() {
+      const modal = document.getElementById('modalGitHubPublish');
+      if (modal) modal.classList.remove('open');
+    }
+
+    async function doPublishToGitHub() {
+      const tokenInput = document.getElementById('inpGithubToken');
+      const token = (tokenInput ? tokenInput.value : '').trim();
+      const status = document.getElementById('githubPublishStatus');
+      const publishBtn = document.getElementById('btnDoPublishGithub');
+
+      if (!token) {
+        alert('Please enter your GitHub Personal Access Token');
+        return;
+      }
+
+      localStorage.setItem('tc_github_token', token);
+      gatherAllFormInputs();
+
+      if (publishBtn) {
+        publishBtn.disabled = true;
+        publishBtn.innerText = '⏳ Publishing to GitHub...';
+      }
+      if (status) {
+        status.style.display = 'block';
+        status.style.background = '#EFF6FF';
+        status.style.color = '#1D4ED8';
+        status.innerText = 'Connecting to GitHub repository hemanthgowdatn2003/Tctravels...';
+      }
+
+      const REPO = 'hemanthgowdatn2003/Tctravels';
+      const BRANCH = 'main';
+
+      try {
+        async function updateGithubFile(filePath, fileContentString, commitMessage) {
+          const apiUrl = `https://api.github.com/repos/${REPO}/contents/${filePath}?ref=${BRANCH}`;
+          let sha = null;
+          try {
+            const getRes = await fetch(apiUrl, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            if (getRes.ok) {
+              const fileData = await getRes.json();
+              sha = fileData.sha;
+            }
+          } catch (_) {}
+
+          const utf8Bytes = new TextEncoder().encode(fileContentString);
+          let binaryStr = '';
+          for (let i = 0; i < utf8Bytes.length; i++) {
+            binaryStr += String.fromCharCode(utf8Bytes[i]);
+          }
+          const base64Content = btoa(binaryStr);
+
+          const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: commitMessage,
+              content: base64Content,
+              branch: BRANCH,
+              ...(sha ? { sha } : {})
+            })
+          });
+
+          if (!putRes.ok) {
+            const errData = await putRes.json().catch(() => ({}));
+            throw new Error(errData.message || `Failed to update ${filePath} (HTTP ${putRes.status})`);
+          }
+        }
+
+        const jsContent = `/**\n * TC Travels Mysore - Data Store\n * Automatically synchronized via Admin Portal\n */\n\nvar TC_DATA = ${JSON.stringify(SITE_DATA, null, 2)};\n\nif (typeof window !== 'undefined') {\n  window.TC_DATA = TC_DATA;\n}\nif (typeof module !== 'undefined') {\n  module.exports = TC_DATA;\n}\n`;
+        const jsonContent = JSON.stringify(SITE_DATA, null, 2);
+
+        if (status) status.innerText = 'Updating js/data.js on GitHub repository...';
+        await updateGithubFile('js/data.js', jsContent, 'Update website images and content from Admin Portal');
+
+        if (status) status.innerText = 'Updating data/site-data.json on GitHub repository...';
+        await updateGithubFile('data/site-data.json', jsonContent, 'Update site-data.json from Admin Portal');
+
+        if (status) {
+          status.style.background = '#DCFCE7';
+          status.style.color = '#15803D';
+          status.innerHTML = '🎉 <strong>Success!</strong> All changes and images committed to GitHub! GitHub Pages is deploying your live site right now (takes ~30-60s).';
+        }
+        showToast('🚀 Successfully published to GitHub Pages!');
+      } catch (err) {
+        console.error('GitHub publish error:', err);
+        if (status) {
+          status.style.background = '#FEE2E2';
+          status.style.color = '#DC2626';
+          status.innerText = '❌ Error publishing: ' + err.message;
+        }
+      } finally {
+        if (publishBtn) {
+          publishBtn.disabled = false;
+          publishBtn.innerText = '🚀 Publish Now to GitHub';
+        }
+      }
+    }
+
     // =========================================================================
     // IMAGE UPLOAD & GALLERY FUNCTIONS
     // =========================================================================
@@ -2168,7 +2361,7 @@
         const img = new Image();
         img.onload = () => {
           try {
-            const MAX_DIM = 1200;
+            const MAX_DIM = 850;
             let w = img.naturalWidth || img.width || 800;
             let h = img.naturalHeight || img.height || 600;
 
@@ -2188,8 +2381,8 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Compress to JPEG with 0.82 quality for sharp visuals and lightweight payload (~80-150KB)
-            const compressed = canvas.toDataURL('image/jpeg', 0.82);
+            // Compress to JPEG with 0.76 quality for ultra-crisp visuals and lightweight payload (~30-50KB)
+            const compressed = canvas.toDataURL('image/jpeg', 0.76);
             cleanup();
             resolve({ dataUrl: compressed, width: canvas.width, height: canvas.height });
           } catch (canvasErr) {

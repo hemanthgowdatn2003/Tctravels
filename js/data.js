@@ -3,7 +3,7 @@
  * Automatically synchronized via Admin Portal
  */
 
-const TC_DATA = {
+var TC_DATA = {
   "company": {
     "name": "TC Travels Mysore",
     "tagline": "Treks • Trips • Memories — Let's Explore!",
@@ -385,3 +385,12 @@ const TC_DATA = {
     }
   ]
 };
+
+if (typeof window !== 'undefined') {
+  window.TC_DATA = TC_DATA;
+}
+if (typeof module !== 'undefined') {
+  module.exports = TC_DATA;
+}
+
+
