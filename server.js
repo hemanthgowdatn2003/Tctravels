@@ -71,8 +71,21 @@ function parseJsonBody(req, callback) {
 
 function createServer() {
   const requestHandler = (req, res) => {
-    const parsedUrl = req.url.split('?')[0];
+    const rawUrl = req.url.split('?')[0];
+    const parsedUrl = rawUrl.endsWith('/') && rawUrl.length > 1 ? rawUrl.slice(0, -1) : rawUrl;
     const method = req.method.toUpperCase();
+
+    // Enable CORS for all incoming origins (supports Live Server, LAN IP, and localhost)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token');
+
+    // Handle CORS preflight requests
+    if (method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
 
     // =========================================================================
     // REST API ENDPOINTS
@@ -304,6 +317,13 @@ function createServer() {
       return;
     }
 
+
+    // Safety catch-all for unmatched /api/ endpoints (avoids static file 404 or 405)
+    if (parsedUrl.startsWith('/api/')) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: `API route not found: ${method} ${parsedUrl}` }));
+      return;
+    }
 
     // =========================================================================
     // STATIC ASSET SERVING

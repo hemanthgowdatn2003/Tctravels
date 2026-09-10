@@ -1254,6 +1254,26 @@
     let SITE_DATA = null;
     let AUTH_TOKEN = sessionStorage.getItem('tc_admin_token') || '';
 
+    // Intelligent API base URL resolver (enables seamless usage via Live Server, LAN IP, or localhost)
+    function getApiBaseUrl() {
+      const proto = window.location.protocol;
+      const port = window.location.port;
+
+      if (proto === 'file:') {
+        return 'http://localhost:3000';
+      }
+
+      if (port === '3000' || port === '3001') {
+        return '';
+      }
+
+      // When opened via VS Code Live Server (port 5500), Live Preview, or other preview tools,
+      // route requests to the active Node.js server on port 3000
+      const host = window.location.hostname || 'localhost';
+      return `${proto}//${host}:3000`;
+    }
+    const API_BASE = getApiBaseUrl();
+
     document.addEventListener('DOMContentLoaded', () => {
       initTabs();
       checkAuth();
@@ -1263,6 +1283,11 @@
       setupModalHandlers();
       setupAddEntityForms();
       setupGalleryDropzone();
+
+      if (window.location.port !== '3000' && window.location.port !== '3001') {
+        const warn = document.getElementById('liveServerWarning');
+        if (warn) warn.style.display = 'block';
+      }
     });
 
     // 1. Check Authentication State
@@ -1290,12 +1315,22 @@
         loginAlert.style.display = 'none';
 
         try {
-          const res = await fetch('/api/login', {
+          const res = await fetch(`${API_BASE}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
           });
-          const result = await res.json();
+
+          const text = await res.text();
+          let result = null;
+          try {
+            result = JSON.parse(text);
+          } catch(parseErr) {
+            if (res.status === 405) {
+              throw new Error('This static preview server returned 405 Method Not Allowed. Please open http://localhost:3000/admin.html directly in your browser.');
+            }
+            throw new Error(`Server returned HTTP ${res.status}: ${text.substring(0, 100)}`);
+          }
 
           if (result.success && result.token) {
             AUTH_TOKEN = result.token;
@@ -1308,7 +1343,7 @@
             loginAlert.style.display = 'block';
           }
         } catch (err) {
-          loginAlert.innerText = 'Server error. Please ensure node server is running.';
+          loginAlert.innerHTML = `⚠️ ${err.message || 'Server error'}<br><small style="display:block; margin-top: 6px;">👉 Open in Chrome/Edge: <a href="http://localhost:3000/admin.html" style="color: #0284C7; font-weight: bold; text-decoration: underline;">http://localhost:3000/admin.html</a></small>`;
           loginAlert.style.display = 'block';
         }
       });
@@ -1316,7 +1351,7 @@
       logoutBtn.addEventListener('click', async () => {
         if (AUTH_TOKEN) {
           try {
-            await fetch('/api/logout', {
+            await fetch(`${API_BASE}/api/logout`, {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
             });
@@ -1350,7 +1385,7 @@
     // 4. Load Data from Server API
     async function loadSiteData() {
       try {
-        const res = await fetch('/api/data');
+        const res = await fetch(`${API_BASE}/api/data`);
         SITE_DATA = await res.json();
         populateFields();
         loadGalleryImages();
@@ -1851,7 +1886,7 @@
         saveBtn.innerText = '⏳ Saving...';
 
         try {
-          const res = await fetch('/api/data', {
+          const res = await fetch(`${API_BASE}/api/data`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1885,7 +1920,7 @@
         const newPassword = document.getElementById('inpNewPassword').value;
 
         try {
-          const res = await fetch('/api/change-password', {
+          const res = await fetch(`${API_BASE}/api/change-password`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1922,7 +1957,7 @@
         reader.onload = async () => {
           try {
             const base64Data = reader.result;
-            const res = await fetch('/api/upload', {
+            const res = await fetch(`${API_BASE}/api/upload`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -2125,7 +2160,7 @@
       if (!container) return;
 
       try {
-        const res = await fetch('/api/images');
+        const res = await fetch(`${API_BASE}/api/images`);
         const data = await res.json();
         if (data.success && Array.isArray(data.images)) {
           if (countText) countText.innerText = `${data.images.length} Photos`;
