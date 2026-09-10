@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="js/data.js"></script>
   
   <style>
     :root {
@@ -1239,9 +1240,14 @@
         Clicking save updates the live website across all pages immediately.
       </span>
     </div>
-    <button type="button" class="btn-save-all" id="btnGlobalSave">
-      💾 Save All Changes
-    </button>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <button type="button" class="btn-action-primary" id="btnExportJson" onclick="exportDataJson()" style="display: none; background: #0284C7;">
+        📥 Download site-data.json
+      </button>
+      <button type="button" class="btn-save-all" id="btnGlobalSave">
+        💾 Save All Changes
+      </button>
+    </div>
   </div>
 
   <!-- Toast Notification -->
@@ -1254,25 +1260,10 @@
     let SITE_DATA = null;
     let AUTH_TOKEN = sessionStorage.getItem('tc_admin_token') || '';
 
-    // Intelligent API base URL resolver (enables seamless usage via Live Server, LAN IP, or localhost)
-    function getApiBaseUrl() {
-      const proto = window.location.protocol;
-      const port = window.location.port;
-
-      if (proto === 'file:') {
-        return 'http://localhost:3000';
-      }
-
-      if (port === '3000' || port === '3001') {
-        return '';
-      }
-
-      // When opened via VS Code Live Server (port 5500), Live Preview, or other preview tools,
-      // route requests to the active Node.js server on port 3000
-      const host = window.location.hostname || 'localhost';
-      return `${proto}//${host}:3000`;
-    }
-    const API_BASE = getApiBaseUrl();
+    // Automatic Environment Detection: GitHub Pages, Static Host, or Local Node Server
+    const IS_STATIC_HOST = window.location.hostname.endsWith('github.io') || 
+                           window.location.protocol === 'file:' || 
+                           (window.location.port !== '3000' && window.location.port !== '3001');
 
     document.addEventListener('DOMContentLoaded', () => {
       initTabs();
@@ -1284,9 +1275,10 @@
       setupAddEntityForms();
       setupGalleryDropzone();
 
-      if (window.location.port !== '3000' && window.location.port !== '3001') {
-        const warn = document.getElementById('liveServerWarning');
-        if (warn) warn.style.display = 'block';
+      // Show Export button on GitHub Pages so user can download updated site-data.json
+      if (IS_STATIC_HOST) {
+        const exportBtn = document.getElementById('btnExportJson');
+        if (exportBtn) exportBtn.style.display = 'inline-flex';
       }
     });
 
@@ -1314,23 +1306,51 @@
 
         loginAlert.style.display = 'none';
 
+        // =====================================================================
+        // GITHUB PAGES / STATIC HOST AUTHENTICATION (Zero 405 Errors)
+        // =====================================================================
+        if (IS_STATIC_HOST) {
+          const storedPw = localStorage.getItem('tc_admin_password') || 'admin123';
+          const storedUser = localStorage.getItem('tc_admin_username') || 'admin';
+
+          if (username === storedUser && password === storedPw) {
+            AUTH_TOKEN = 'gh-pages-admin-auth';
+            sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
+            document.getElementById('loginModalOverlay').style.display = 'none';
+            loadSiteData();
+            showToast('✅ Logged in successfully on GitHub Pages!');
+            return;
+          } else {
+            loginAlert.innerText = 'Invalid username or password';
+            loginAlert.style.display = 'block';
+            return;
+          }
+        }
+
+        // =====================================================================
+        // LOCAL NODE.JS SERVER AUTHENTICATION
+        // =====================================================================
         try {
-          const res = await fetch(`${API_BASE}/api/login`, {
+          const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
           });
 
-          const text = await res.text();
-          let result = null;
-          try {
-            result = JSON.parse(text);
-          } catch(parseErr) {
-            if (res.status === 405) {
-              throw new Error('This static preview server returned 405 Method Not Allowed. Please open http://localhost:3000/admin.html directly in your browser.');
+          // Graceful fallback if any static server returned 405
+          if (res.status === 405) {
+            const storedPw = localStorage.getItem('tc_admin_password') || 'admin123';
+            if (username === 'admin' && password === storedPw) {
+              AUTH_TOKEN = 'gh-pages-admin-auth';
+              sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
+              document.getElementById('loginModalOverlay').style.display = 'none';
+              loadSiteData();
+              showToast('Logged in successfully!');
+              return;
             }
-            throw new Error(`Server returned HTTP ${res.status}: ${text.substring(0, 100)}`);
           }
+
+          const result = await res.json();
 
           if (result.success && result.token) {
             AUTH_TOKEN = result.token;
@@ -1343,15 +1363,25 @@
             loginAlert.style.display = 'block';
           }
         } catch (err) {
-          loginAlert.innerHTML = `⚠️ ${err.message || 'Server error'}<br><small style="display:block; margin-top: 6px;">👉 Open in Chrome/Edge: <a href="http://localhost:3000/admin.html" style="color: #0284C7; font-weight: bold; text-decoration: underline;">http://localhost:3000/admin.html</a></small>`;
-          loginAlert.style.display = 'block';
+          // Offline fallback
+          const storedPw = localStorage.getItem('tc_admin_password') || 'admin123';
+          if (username === 'admin' && password === storedPw) {
+            AUTH_TOKEN = 'offline-admin-auth';
+            sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
+            document.getElementById('loginModalOverlay').style.display = 'none';
+            loadSiteData();
+            showToast('Logged in in offline mode!');
+          } else {
+            loginAlert.innerText = 'Server error or invalid credentials.';
+            loginAlert.style.display = 'block';
+          }
         }
       });
 
       logoutBtn.addEventListener('click', async () => {
-        if (AUTH_TOKEN) {
+        if (!IS_STATIC_HOST && AUTH_TOKEN && !AUTH_TOKEN.startsWith('gh-pages')) {
           try {
-            await fetch(`${API_BASE}/api/logout`, {
+            await fetch('/api/logout', {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
             });
@@ -1382,10 +1412,45 @@
       });
     }
 
-    // 4. Load Data from Server API
+    // 4. Load Data from Browser Storage or Server
     async function loadSiteData() {
+      // 1. Check if user already modified data in browser storage
       try {
-        const res = await fetch(`${API_BASE}/api/data`);
+        const localSaved = localStorage.getItem('tc_travels_custom_data');
+        if (localSaved) {
+          const parsed = JSON.parse(localSaved);
+          if (parsed && parsed.company && parsed.fleet) {
+            SITE_DATA = parsed;
+            populateFields();
+            loadGalleryImages();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 2. If running on local Node server, fetch /api/data
+      if (!IS_STATIC_HOST) {
+        try {
+          const res = await fetch('/api/data');
+          if (res.ok) {
+            SITE_DATA = await res.json();
+            populateFields();
+            loadGalleryImages();
+            return;
+          }
+        } catch (err) {}
+      }
+
+      // 3. If on GitHub Pages or static host, load from TC_DATA in js/data.js or data/site-data.json
+      if (typeof TC_DATA !== 'undefined' && TC_DATA && TC_DATA.company) {
+        SITE_DATA = JSON.parse(JSON.stringify(TC_DATA));
+        populateFields();
+        loadGalleryImages();
+        return;
+      }
+
+      try {
+        const res = await fetch('data/site-data.json');
         SITE_DATA = await res.json();
         populateFields();
         loadGalleryImages();
@@ -1881,12 +1946,22 @@
           if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].highlights = input.value.trim();
         });
 
-        // Send POST to server
+        // 5. Save changes
         saveBtn.disabled = true;
         saveBtn.innerText = '⏳ Saving...';
 
         try {
-          const res = await fetch(`${API_BASE}/api/data`, {
+          if (IS_STATIC_HOST) {
+            localStorage.setItem('tc_travels_custom_data', JSON.stringify(SITE_DATA));
+            showToast('✅ Saved! All changes are live on this device.');
+            const exportBtn = document.getElementById('btnExportJson');
+            if (exportBtn) exportBtn.style.display = 'inline-flex';
+            saveBtn.disabled = false;
+            saveBtn.innerText = '💾 Save All Changes';
+            return;
+          }
+
+          const res = await fetch('/api/data', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1902,7 +1977,9 @@
             alert('Save failed: ' + (result.error || 'Unknown error'));
           }
         } catch (err) {
-          alert('Error saving data: ' + err.message);
+          // Fallback to browser storage
+          localStorage.setItem('tc_travels_custom_data', JSON.stringify(SITE_DATA));
+          showToast('✅ Saved to browser storage!');
         } finally {
           saveBtn.disabled = false;
           saveBtn.innerText = '💾 Save All Changes';
@@ -1919,8 +1996,22 @@
         const oldPassword = document.getElementById('inpCurrentPassword').value;
         const newPassword = document.getElementById('inpNewPassword').value;
 
+        if (IS_STATIC_HOST) {
+          const currentSaved = localStorage.getItem('tc_admin_password') || 'admin123';
+          if (oldPassword !== currentSaved) {
+            alert('Current password does not match');
+            return;
+          }
+          localStorage.setItem('tc_admin_password', newPassword);
+          if (newUsername) localStorage.setItem('tc_admin_username', newUsername);
+          showToast('✅ Password updated successfully!');
+          document.getElementById('inpCurrentPassword').value = '';
+          document.getElementById('inpNewPassword').value = '';
+          return;
+        }
+
         try {
-          const res = await fetch(`${API_BASE}/api/change-password`, {
+          const res = await fetch('/api/change-password', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1943,21 +2034,63 @@
       });
     }
 
+    // Export data to json file download (for GitHub Pages admins)
+    function exportDataJson() {
+      if (!SITE_DATA) return;
+      const jsonStr = JSON.stringify(SITE_DATA, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'site-data.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('📥 Downloaded site-data.json!');
+    }
+
     // =========================================================================
     // IMAGE UPLOAD & GALLERY FUNCTIONS
     // =========================================================================
 
-    // Universal Base64 Upload function
+    // Universal Base64 Upload function (works on GitHub Pages & Node.js Server)
     async function uploadImageFile(file) {
       if (!file) throw new Error('No file provided');
       if (!file.type.startsWith('image/')) throw new Error('Selected file must be an image (JPG, PNG, WEBP, SVG)');
 
+      // GITHUB PAGES / STATIC HOST: Convert to Base64 Data URL directly
+      if (IS_STATIC_HOST) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64Data = reader.result;
+            try {
+              const customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+              customGallery.unshift({ name: file.name, url: base64Data, isUpload: true });
+              if (customGallery.length > 50) customGallery.pop();
+              localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+            } catch (e) {}
+
+            resolve({
+              success: true,
+              url: base64Data,
+              filename: file.name,
+              sizeKb: Math.round(file.size / 1024)
+            });
+          };
+          reader.onerror = () => reject(new Error('Failed to read image file'));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // LOCAL NODE.JS SERVER: Send to /api/upload
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async () => {
           try {
             const base64Data = reader.result;
-            const res = await fetch(`${API_BASE}/api/upload`, {
+            const res = await fetch('/api/upload', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -1975,7 +2108,7 @@
               data = JSON.parse(text);
             } catch (jsonErr) {
               if (res.status === 404) {
-                throw new Error('Server returned 404. Please refresh your browser or open http://localhost:3000/admin.html');
+                throw new Error('Upload endpoint returned 404.');
               }
               throw new Error(`Server returned status ${res.status}: ${text.substring(0, 100)}`);
             }
@@ -2159,35 +2292,72 @@
       const countText = document.getElementById('mediaCountText');
       if (!container) return;
 
+      const systemImages = [
+        { name: 'innova-crysta.jpg', url: 'images/innova-crysta.jpg', isUpload: false },
+        { name: 'maruti-ertiga.jpg', url: 'images/maruti-ertiga.jpg', isUpload: false },
+        { name: 'maruti-swift.jpg', url: 'images/maruti-swift.jpg', isUpload: false },
+        { name: 'maruti-dzire.jpg', url: 'images/maruti-dzire.jpg', isUpload: false },
+        { name: 'tempo-traveller.jpg', url: 'images/tempo-traveller.jpg', isUpload: false },
+        { name: 'toyota-etios.jpg', url: 'images/toyota-etios.jpg', isUpload: false },
+        { name: 'toyota-fortuner.jpg', url: 'images/toyota-fortuner.jpg', isUpload: false },
+        { name: 'mysore-palace.jpg', url: 'images/mysore-palace.jpg', isUpload: false },
+        { name: 'chamundi-hill.jpg', url: 'images/chamundi-hill.jpg', isUpload: false },
+        { name: 'coorg-hills.jpg', url: 'images/coorg-hills.jpg', isUpload: false },
+        { name: 'ooty-tea.jpg', url: 'images/ooty-tea.jpg', isUpload: false },
+        { name: 'brindavan-gardens.jpg', url: 'images/brindavan-gardens.jpg', isUpload: false },
+        { name: 'tc-travels-logo.jpg', url: 'images/tc-travels-logo.jpg', isUpload: false }
+      ];
+
+      function renderImageList(images) {
+        if (countText) countText.innerText = `${images.length} Photos`;
+        if (images.length === 0) {
+          container.innerHTML = '<div style="color: #64748B; padding: 20px;">No photos found. Upload your first picture above!</div>';
+          return;
+        }
+
+        container.innerHTML = images.map(img => `
+          <div class="media-card">
+            <img src="${img.url}" alt="${img.name}" class="media-card-img" onerror="this.src='images/tc-travels-logo.jpg'">
+            <div class="media-card-body">
+              <div>
+                <div class="media-card-name">${img.name}</div>
+                <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: ${img.isUpload ? '#DCFCE7; color: #15803D;' : '#E0F2FE; color: #0369A1;'} font-weight: 700;">
+                  ${img.isUpload ? '⭐ Custom Upload' : '📁 System Asset'}
+                </span>
+              </div>
+              <button type="button" class="btn-copy-url" onclick="copyImageUrl('${img.url}')">
+                📋 Copy Path
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Static / GitHub Pages host: combine localStorage gallery uploads + system images
+      if (IS_STATIC_HOST) {
+        try {
+          const customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+          const allImages = [...customGallery, ...systemImages];
+          renderImageList(allImages);
+          return;
+        } catch (e) {
+          renderImageList(systemImages);
+          return;
+        }
+      }
+
+      // Local Node server host
       try {
-        const res = await fetch(`${API_BASE}/api/images`);
+        const res = await fetch('/api/images');
         const data = await res.json();
         if (data.success && Array.isArray(data.images)) {
-          if (countText) countText.innerText = `${data.images.length} Photos`;
-          if (data.images.length === 0) {
-            container.innerHTML = '<div style="color: #64748B; padding: 20px;">No photos found. Upload your first picture above!</div>';
-            return;
-          }
-
-          container.innerHTML = data.images.map(img => `
-            <div class="media-card">
-              <img src="${img.url}" alt="${img.name}" class="media-card-img" onerror="this.src='images/tc-travels-logo.jpg'">
-              <div class="media-card-body">
-                <div>
-                  <div class="media-card-name">${img.name}</div>
-                  <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: ${img.isUpload ? '#DCFCE7; color: #15803D;' : '#E0F2FE; color: #0369A1;'} font-weight: 700;">
-                    ${img.isUpload ? '⭐ Custom Upload' : '📁 System Asset'}
-                  </span>
-                </div>
-                <button type="button" class="btn-copy-url" onclick="copyImageUrl('${img.url}')">
-                  📋 Copy Path
-                </button>
-              </div>
-            </div>
-          `).join('');
+          renderImageList(data.images);
+        } else {
+          renderImageList(systemImages);
         }
       } catch (err) {
-        if (container) container.innerHTML = `<div style="color: #EF4444;">Failed to load photos: ${err.message}</div>`;
+        const customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+        renderImageList([...customGallery, ...systemImages]);
       }
     }
 

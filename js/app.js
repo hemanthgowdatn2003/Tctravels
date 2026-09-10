@@ -19,6 +19,18 @@ document.addEventListener('DOMContentLoaded', async () => {
    0. REAL-TIME DATA SYNC FROM SERVER API
    ========================================================================== */
 async function loadServerData() {
+  // 1. Check local browser storage for admin portal modifications (works on GitHub Pages)
+  try {
+    const localData = localStorage.getItem('tc_travels_custom_data');
+    if (localData) {
+      const parsed = JSON.parse(localData);
+      if (parsed && parsed.company && parsed.fleet) {
+        window.TC_DATA = parsed;
+      }
+    }
+  } catch (e) {}
+
+  // 2. If running on Node.js backend or relative API, sync latest server data
   try {
     const res = await fetch('/api/data');
     if (res.ok) {
@@ -28,7 +40,7 @@ async function loadServerData() {
       }
     }
   } catch (err) {
-    // Graceful fallback to static TC_DATA in js/data.js
+    // Graceful fallback to static TC_DATA
   }
 }
 
