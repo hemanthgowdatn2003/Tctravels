@@ -1,0 +1,387 @@
+/**
+ * TC Travels Mysore - Data Store
+ * Automatically synchronized via Admin Portal
+ */
+
+const TC_DATA = {
+  "company": {
+    "name": "TC Travels Mysore",
+    "tagline": "Treks • Trips • Memories — Let's Explore!",
+    "kannadaTagline": "ನಿಮ್ಮ ವಿಶ್ವಾಸಾರ್ಹ ಮೈಸೂರು ಟ್ರಾವೆಲ್ಸ್ (Namma Mysuru Travel Partner)",
+    "logo": "images/tc-travels-logo.jpg",
+    "phone": "+91 97414 22544",
+    "phoneSecondary": "+91 97414 22544",
+    "whatsappNumber": "919741422544",
+    "email": "contact@tctravelsmysore.com",
+    "address": "Near Mysore Palace, Gandhi Square, Mysuru, Karnataka - 570001",
+    "operatingHours": "24x7 Round-The-Clock Service",
+    "experienceYears": "12+",
+    "happyCustomers": "25,000+",
+    "vehiclesCount": "50+",
+    "expertDrivers": "40+",
+    "languages": "Kannada, English, Hindi, Tamil & Telugu speaking chauffeurs"
+  },
+  "policies": {
+    "outstationMinSedan": "250 KM / Day (Mandatory)",
+    "outstationMinSuv": "300 KM / Day (Mandatory)",
+    "dayCalculation": "1 Day = 1 Calendar Day (12:00 AM to 11:59 PM)",
+    "driverBattaNote": "Driver Batta / Day Allowance: ₹300 - ₹500/day depending on vehicle",
+    "extrasNote": "Tolls, Parking & Interstate State Permit paid directly at actuals"
+  },
+  "fleet": [
+    {
+      "id": "swift-dzire",
+      "name": "Maruti Suzuki Dzire",
+      "category": "sedan",
+      "categoryLabel": "Prime AC Sedan",
+      "tag": "Most Popular",
+      "image": "images/maruti-dzire.jpg",
+      "seats": "4 Passengers",
+      "luggage": "2 Large Bags",
+      "ac": "Chilled AC",
+      "fuel": "Diesel / CNG",
+      "transmission": "Manual / Auto",
+      "pricePerKm": "₹ 11",
+      "minKmPerDay": "250 KM / Day Mandatory",
+      "minKmValue": 250,
+      "driverBatta": "₹ 300 / Day",
+      "localPackagePrice": "₹ 1,800",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹11/km, ₹120/hr)",
+      "features": [
+        "Fastag Enabled",
+        "Experienced Kannada/Hindi Driver",
+        "Clean & Sanitized",
+        "Mobile Charger"
+      ]
+    },
+    {
+      "id": "etios",
+      "name": "Toyota Etios",
+      "category": "sedan",
+      "categoryLabel": "Executive Sedan",
+      "tag": "Comfort Ride",
+      "image": "images/toyota-etios.jpg",
+      "seats": "4 Passengers",
+      "luggage": "3 Large Bags",
+      "ac": "Dual AC",
+      "fuel": "Diesel",
+      "transmission": "Manual",
+      "pricePerKm": "₹ 12",
+      "minKmPerDay": "250 KM / Day Mandatory",
+      "minKmValue": 250,
+      "driverBatta": "₹ 500/ Day",
+      "localPackagePrice": "₹ 1,900",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹12/km, ₹120/hr)",
+      "features": [
+        "Spacious Legroom",
+        "Large Boot Space",
+        "Well Maintained",
+        "Punctual Doorstep Pickup"
+      ]
+    },
+    {
+      "id": "ertiga",
+      "name": "Maruti Suzuki Ertiga",
+      "category": "suv",
+      "categoryLabel": "7-Seater Family SUV",
+      "tag": "Best Value Family",
+      "image": "images/maruti-ertiga.jpg",
+      "seats": "6 Passengers + Driver",
+      "luggage": "3 Bags",
+      "ac": "Roof Mounted Dual AC",
+      "fuel": "Diesel / CNG",
+      "transmission": "Manual",
+      "pricePerKm": "₹ 14",
+      "minKmPerDay": "250 KM / Day Mandatory",
+      "minKmValue": 250,
+      "driverBatta": "₹ 350 / Day",
+      "localPackagePrice": "₹ 2,400",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹14/km, ₹150/hr)",
+      "features": [
+        "Comfortable 3-row seating",
+        "AC vents all rows",
+        "Great for Temple Pilgrimages",
+        "Economic Long Trips"
+      ]
+    },
+    {
+      "id": "innova-crysta",
+      "name": "Toyota Innova Crysta",
+      "category": "suv",
+      "categoryLabel": "Luxury Family MPV / SUV",
+      "tag": "Top Rated for Outstation",
+      "image": "images/innova-crysta.jpg",
+      "seats": "6 - 7 Passengers",
+      "luggage": "4-5 Suitcases",
+      "ac": "Multi-Zone Auto Climate",
+      "fuel": "Diesel",
+      "transmission": "Manual / Automatic",
+      "pricePerKm": "₹ 18",
+      "minKmPerDay": "300 KM / Day Mandatory",
+      "minKmValue": 300,
+      "driverBatta": "₹ 400 / Day",
+      "localPackagePrice": "₹ 3,200",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹18/km, ₹180/hr)",
+      "features": [
+        "Captain Recliner Seats",
+        "Ghat Road & Hill Specialist Driver",
+        "Ultimate Ride Comfort",
+        "Spacious Boot"
+      ]
+    },
+    {
+      "id": "tempo-traveller-12",
+      "name": "Force Tempo Traveller (12 Seater)",
+      "category": "tempo",
+      "categoryLabel": "12-Seater Group Van",
+      "tag": "Group Tour Favorite",
+      "image": "images/tempo-traveller.jpg",
+      "seats": "12 Pushback + 1 Driver",
+      "luggage": "Luggage Carrier Box",
+      "ac": "Roof Ducted High AC",
+      "fuel": "Diesel",
+      "transmission": "Manual",
+      "pricePerKm": "₹ 22",
+      "minKmPerDay": "300 KM / Day Mandatory",
+      "minKmValue": 300,
+      "driverBatta": "₹ 500 / Day",
+      "localPackagePrice": "₹ 4,200",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹22/km, ₹250/hr)",
+      "features": [
+        "Pushback Luxury Seats",
+        "LED TV & Stereo System",
+        "Coorg/Ooty Hill Certified",
+        "Ideal for Pilgrimage & Treks"
+      ]
+    },
+    {
+      "id": "tempo-traveller-17",
+      "name": "Maharaja Luxury Tempo (17 Seater)",
+      "category": "tempo",
+      "categoryLabel": "17-Seater Mini Coach",
+      "tag": "Wedding & Large Group",
+      "image": "images/tempo-traveller.jpg",
+      "seats": "17 Reclining Seats + 1 Driver",
+      "luggage": "Full Boot + Roof Rack",
+      "ac": "Individual AC Vents",
+      "fuel": "Diesel",
+      "transmission": "Manual",
+      "pricePerKm": "₹ 26",
+      "minKmPerDay": "300 KM / Day Mandatory",
+      "minKmValue": 300,
+      "driverBatta": "₹ 500 / Day",
+      "localPackagePrice": "₹ 5,400",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹26/km, ₹300/hr)",
+      "features": [
+        "Maharaja Luxury Seats",
+        "Charging Socket for every seat",
+        "Large Group Pilgrimages",
+        "Smooth Hill Climbs"
+      ]
+    },
+    {
+      "id": "swift-hatchback",
+      "name": "Maruti Suzuki Swift",
+      "category": "hatchback",
+      "categoryLabel": "Compact Hatchback",
+      "tag": "Budget Friendly",
+      "image": "images/maruti-swift.jpg",
+      "seats": "4 Passengers",
+      "luggage": "2 Bags",
+      "ac": "Chilled AC",
+      "fuel": "Petrol / Diesel",
+      "transmission": "Manual",
+      "pricePerKm": "₹ 10",
+      "minKmPerDay": "250 KM / Day Mandatory",
+      "minKmValue": 250,
+      "driverBatta": "₹ 300 / Day",
+      "localPackagePrice": "₹ 1,500",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹10/km, ₹100/hr)",
+      "features": [
+        "Easy City Navigation",
+        "Quick Mysore Pickup",
+        "Affordable Daily Rental"
+      ]
+    },
+    {
+      "id": "toyota-fortuner",
+      "name": "Toyota Fortuner 4x4",
+      "category": "luxury",
+      "categoryLabel": "VIP Luxury SUV",
+      "tag": "VIP Royal",
+      "image": "images/toyota-fortuner.jpg",
+      "seats": "6 Passengers",
+      "luggage": "4 Bags",
+      "ac": "Tri-Zone Climate",
+      "fuel": "Diesel",
+      "transmission": "Automatic",
+      "pricePerKm": "₹ 35",
+      "minKmPerDay": "300 KM / Day Mandatory",
+      "minKmValue": 300,
+      "driverBatta": "₹ 600 / Day",
+      "localPackagePrice": "₹ 6,500",
+      "localPackageDetails": "8 Hours / 80 KM (Extra: ₹35/km, ₹400/hr)",
+      "features": [
+        "VIP Escort & Dignitaries",
+        "Mysore Royal Weddings",
+        "Senior Uniformed Chauffeur"
+      ]
+    }
+  ],
+  "driverServices": [
+    {
+      "id": "driver-city-4hr",
+      "title": "Short City Trip Driver (Acting Driver)",
+      "subtitle": "For shopping, doctor visits, functions & restaurant dining in Mysore",
+      "duration": "4 Hours (City Limits)",
+      "price": "₹ 499",
+      "overtime": "₹ 99 / extra hour",
+      "badge": "Quick Trip",
+      "features": [
+        "Driver reaches your doorstep in Mysore within 30-45 mins",
+        "Expert in Manual & Automatic transmission cars",
+        "Zero parking headache at crowded markets and temples",
+        "Safe drop-off right back into your parking lot"
+      ]
+    },
+    {
+      "id": "driver-city-8hr",
+      "title": "Full Day Mysore City Driver",
+      "subtitle": "Dedicated personal chauffeur for city business, marriage functions & local tours",
+      "duration": "8 Hours (Mysore Limits)",
+      "price": "₹ 899",
+      "overtime": "₹ 100 / extra hour",
+      "badge": "Most Booked",
+      "popular": true,
+      "features": [
+        "8 hours dedicated personal chauffeur for your own vehicle",
+        "Police-verified & courteous Kannada/Hindi speaking driver",
+        "Non-smoking, neat dress code, polite communication",
+        "Flexible wait times at destinations"
+      ]
+    },
+    {
+      "id": "driver-outstation",
+      "title": "Outstation Holiday Driver (Ghat Road Specialist)",
+      "subtitle": "Relax with your family to Coorg, Ooty, Wayanad, or Tirupati without driving fatigue",
+      "duration": "Per Calendar Day (24 Hrs)",
+      "price": "₹ 1,199",
+      "overtime": "₹ 1,199 / subsequent day",
+      "badge": "Hill Station Pro",
+      "features": [
+        "Skilled in 36 hairpin bends (Ooty) & curvy ghat roads (Coorg/Wayanad)",
+        "Night highway certified with safe speed discipline",
+        "Checks car engine oil, coolant, tire pressure & windshield",
+        "Driver food/batta managed easily"
+      ]
+    },
+    {
+      "id": "driver-party",
+      "title": "Party & Night Safe Driver",
+      "subtitle": "Attend late-night events or dinners without worrying about driving back",
+      "duration": "Night Drop (10 PM to 4 AM)",
+      "price": "₹ 699",
+      "overtime": "₹ 120 / extra hour",
+      "badge": "Safe Ride Home",
+      "features": [
+        "Avoid drink-and-drive penalties and police checking hassles",
+        "Safe and comfortable drop to your residence",
+        "Careful parking inside your gate/garage"
+      ]
+    },
+    {
+      "id": "driver-monthly",
+      "title": "Monthly Dedicated Acting Driver",
+      "subtitle": "Permanent driver for executives, school drops & senior citizen care in Mysore",
+      "duration": "Monthly Retainer (26 Days)",
+      "price": "₹ 18,000+",
+      "overtime": "Custom agreement",
+      "badge": "Corporate / Senior Care",
+      "features": [
+        "Strict background check & address verification",
+        "Replacement driver guaranteed during leave",
+        "Daily car washing & maintenance oversight"
+      ]
+    }
+  ],
+  "tours": [
+    {
+      "id": "mysore-heritage",
+      "title": "Mysore Royal Sightseeing & Darshan",
+      "duration": "1 Day (8 to 10 Hours)",
+      "priceStarting": "₹ 2000",
+      "image": "images/mysore-palace.jpg",
+      "places": [
+        "Mysore Palace (Amba Vilas)",
+        "Chamundeshwari Temple (Chamundi Hill & Big Bull)",
+        "Sri Chamarajendra Zoological Gardens (Zoo)",
+        "Brindavan Gardens & Musical Fountain (KRS)",
+        "St. Philomena's Church"
+      ],
+      "highlights": "Doorstep Mysore pickup & drop. Driver assists with parking & temple queues."
+    },
+    {
+      "id": "mysore-coorg",
+      "title": "Mysore to Coorg (Madikeri & Kushalnagar)",
+      "duration": "2 Days / 1 Night (Min 500 KM)",
+      "priceStarting": "₹ 6,200",
+      "image": "images/coorg-hills.jpg",
+      "places": [
+        "Bylakuppe Golden Temple (Tibetan Monastery)",
+        "Dubare Elephant Camp & River Rafting",
+        "Abbey Falls & Raja's Seat Sunset Point",
+        "Talakaveri (Kaveri Birthplace) & Bhagamandala"
+      ],
+      "highlights": "Scenic mountain driving with Ghat-road certified polite driver."
+    },
+    {
+      "id": "mysore-ooty",
+      "title": "Mysore to Ooty & Coonoor Hill Tour",
+      "duration": "2 Days / 1 Night (Min 500 KM)",
+      "priceStarting": "₹ 7,200",
+      "image": "images/ooty-tea.jpg",
+      "places": [
+        "Bandipur & Mudumalai Forest Safari Corridor",
+        "Ooty Botanical Gardens & Ooty Lake Boating",
+        "Doddabetta Peak & Tea Factory",
+        "Coonoor Sim's Park & Dolphin's Nose"
+      ],
+      "highlights": "Experienced hill drivers skilled in 36 Kalhatti hairpin curves."
+    },
+    {
+      "id": "mysore-airport",
+      "title": "Mysore to Bangalore Kempegowda Airport (BLR)",
+      "duration": "Expressway Taxi (~2.5 - 3 Hours)",
+      "priceStarting": "₹ 3,499",
+      "image": "images/mysore-palace-day.jpg",
+      "places": [
+        "Doorstep pickup from any home or hotel in Mysore",
+        "10-lane Mysore-Bengaluru Expressway route",
+        "Direct drop at Terminal 1 or Terminal 2 Departure gates"
+      ],
+      "highlights": "Guaranteed on-time arrival, Fastag included, 24x7 midnight pickup."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What is the mandatory daily KM limit for outstation trips?",
+      "a": "As per Karnataka transport standards, outstation cab rentals have a mandatory minimum daily limit of 250 KM per calendar day for Sedans, Hatchbacks & Ertiga, and 300 KM per day for Innova Crysta & Tempo Travellers. A calendar day is calculated from 12:00 AM midnight to 11:59 PM. Even if you travel less, the minimum daily km charge applies."
+    },
+    {
+      "q": "How does the Per-KM pricing work?",
+      "a": "Billing is very straightforward: Total KMs traveled multiplied by the vehicle's per-km rate (e.g., Dzire @ ₹11/km or Innova @ ₹18/km), subject to the daily mandatory minimum limit. Driver batta is charged per calendar day. Tolls, parking fees, and interstate entry tax (if crossing state borders) are paid directly at actuals."
+    },
+    {
+      "q": "Can I hire only a personal driver for my own car in Mysore?",
+      "a": "Yes! If you have your own car, you can hire our verified personal drivers. Rates start at ₹499 for 4 hours, ₹899 for 8 hours in Mysore city, or ₹1,199/day for outstation family trips to Coorg, Ooty, or Tirupati."
+    },
+    {
+      "q": "What is included in the Mysore local packages?",
+      "a": "Our local packages (e.g. 8 Hours / 80 KM for ₹1,800 on Dzire) include the car, fuel, driver, and AC for 8 hours within Mysore city limits. Extra kilometers or extra hours are charged at the transparent rates displayed on each vehicle card."
+    },
+    {
+      "q": "What payment methods are accepted?",
+      "a": "We accept Google Pay, PhonePe, Paytm, BHIM UPI, Net Banking, and direct Cash to the driver upon completion of your journey."
+    }
+  ]
+};

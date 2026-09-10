@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TC Travels Mysore | Car Rentals, Packages & Personal Drivers</title>
+  <meta name="description" content="TC Travels Mysore - Treks, Trips & Memories. Home page with featured sliding packages, vehicle rentals per km & personal drivers in Mysore.">
+  <meta name="keywords" content="TC Travels Mysore, Mysore tour packages, Coorg package, car rental Mysore, hire driver for my car Mysore">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/jpeg" href="images/tc-travels-logo.jpg">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. SLEEK HEADER & FULL NAVIGATION
+       ========================================================================== -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand-wrap">
+        <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo" class="brand-logo-circle">
+        <div class="brand-title-wrap">
+          <span class="brand-main-title">TC Travels <span>Mysore</span></span>
+          <span class="brand-tagline-sub">TREKS &bull; TRIPS &bull; MEMORIES</span>
+        </div>
+      </a>
+
+      <!-- Navigation Menu -->
+      <nav>
+        <ul class="nav-menu-bar" id="navMenuBar">
+          <li><a href="index.html" class="nav-link active">Home</a></li>
+          <li><a href="vehicles.html" class="nav-link">Vehicles (Per-KM)</a></li>
+          <li><a href="drivers.html" class="nav-link">Driver for Your Car</a></li>
+          <li><a href="packages.html" class="nav-link">Tour Packages</a></li>
+          <li><a href="about.html" class="nav-link">About Us</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Action Contacts -->
+      <div class="header-contacts">
+        <a href="tel:+919741422544" class="btn-head-call js-phone-link">
+          📞 <span>+91 97414 22544</span>
+        </a>
+        <a href="https://wa.me/919741422544" target="_blank" class="btn-head-wa js-whatsapp-link">
+          💬 <span>WhatsApp</span>
+        </a>
+        <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
+          ☰
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       2. BASIC INFO ABOUT THE TRAVELS
+       ========================================================================== -->
+  <section class="welcome-info-section">
+    <div class="container">
+      <div class="info-card-main">
+        <!-- Left: Introduction -->
+        <div>
+          <span class="welcome-badge">ನಮ್ಮ ಮೈಸೂರಿಗೆ ಸುಸ್ವಾಗತ &bull; WELCOME TO TC TRAVELS</span>
+          <h1 class="welcome-heading">
+            Your Trusted Travel Partner in <span>Mysuru</span>
+          </h1>
+          <p class="welcome-paragraph">
+            Welcome to <strong>TC Travels Mysore</strong> ("Treks &bull; Trips &bull; Memories &bull; <em>Let's Explore</em>"). 
+            Operating right in the heart of Mysuru near Mysore Palace, we offer clean, reliable vehicles for outstation trips, 
+            local sightseeing, Bangalore airport transfers, and verified personal acting drivers to drive your own car.
+          </p>
+
+          <div class="quick-services-row">
+            <div class="qs-item">
+              <h5>🚖 All Types of Vehicles for Rent</h5>
+              <p>Sedans (Dzire, Etios), Family SUVs (Innova Crysta, Ertiga), and Tempo Travellers (12/17 Seater) with transparent Per-KM rates and standard mandatory daily limits (250/300 KM/day).</p>
+            </div>
+            <div class="qs-item">
+              <h5>👨‍✈️ Personal Drivers for Your Car</h5>
+              <p>Hire verified, polite Kannada & Hindi speaking chauffeurs to drive your personal car for city errands, doctor visits, functions, or challenging hill roads like Coorg & Ooty.</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <span style="font-size: 0.85rem; color: #475569; font-weight: 700;">📍 Office: Near Mysore Palace, Gandhi Square, Mysuru</span>
+            <span style="background: #E2E8F0; width: 4px; height: 4px; border-radius: 50%;"></span>
+            <span style="font-size: 0.85rem; color: #16A34A; font-weight: 800;">⚡ 24x7 Round-The-Clock Service</span>
+          </div>
+        </div>
+
+        <!-- Right: Side Card -->
+        <div class="info-side-box">
+          <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo" class="info-side-logo">
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 800; color: #FFFFFF; margin-bottom: 2px;">TC Travels Mysore</h3>
+          <p style="color: var(--accent-gold); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px;">TREKS &bull; TRIPS &bull; MEMORIES</p>
+          <p style="font-size: 0.84rem; color: #CBD5E1; line-height: 1.5; margin-bottom: 14px;">
+            Book cabs or personal drivers with a quick call or WhatsApp message. Instant confirmation & doorstep pickup.
+          </p>
+          <a href="tel:+919741422544" class="side-call-btn js-phone-link">
+            📞 Call +91 97414 22544
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3. PACKAGES DETAILS IN SLIDING FORMAT (Carousel)
+       ========================================================================== -->
+  <section class="slider-section">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="sec-tag">POPULAR PACKAGES & SERVICES</span>
+        <h2 class="sec-title">Tour Packages & Rental Fleet</h2>
+        <p class="sec-desc">Browse our top-rated tour packages and services in interactive sliding format</p>
+      </div>
+
+      <!-- Carousel Wrapper -->
+      <div class="carousel-wrapper" id="packageCarousel">
+        <button type="button" class="slider-btn prev" id="sliderPrevBtn" aria-label="Previous Slide">❮</button>
+        <button type="button" class="slider-btn next" id="sliderNextBtn" aria-label="Next Slide">❯</button>
+
+        <div class="carousel-track" id="carouselTrack">
+          <!-- Slide 1: Mysore Heritage Tour -->
+          <div class="carousel-slide">
+            <div class="slide-img-box">
+              <img src="images/mysore-palace.jpg" alt="Mysore Palace Sightseeing" class="slide-img">
+              <span class="slide-badge-category">Local Heritage Tour</span>
+            </div>
+            <div class="slide-content-box">
+              <div>
+                <h3 class="slide-package-title">Mysore Royal Sightseeing & Darshan</h3>
+                <div class="slide-duration">⏱ 1 Day (8 to 10 Hours) &bull; Doorstep Pickup</div>
+                <p class="slide-desc">
+                  Experience the grand heritage of Mysuru. Visit the illuminated Mysore Palace, Chamundi Hills, Mysore Zoo, St. Philomena's Church, and KRS Brindavan Gardens musical fountain.
+                </p>
+                <div class="slide-places-pills">
+                  <span class="place-pill">🏛️ Mysore Palace</span>
+                  <span class="place-pill">🛕 Chamundeshwari Temple</span>
+                  <span class="place-pill">🦁 Mysore Zoo</span>
+                  <span class="place-pill">⛲ Brindavan Gardens</span>
+                  <span class="place-pill">⛪ St. Philomena's Church</span>
+                </div>
+              </div>
+              <div class="slide-pricing-footer">
+                <div>
+                  <div class="price-label">Sedan Package Starts</div>
+                  <div class="price-amount">₹ 1,800</div>
+                </div>
+                <button type="button" class="btn-book-slide" onclick="bookSlidePackage('Mysore Royal Sightseeing & Darshan', '1 Day Local Package (From ₹1,800)')">
+                  Book on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Coorg Package -->
+          <div class="carousel-slide">
+            <div class="slide-img-box">
+              <img src="images/coorg-hills.jpg" alt="Coorg Holiday Tour" class="slide-img">
+              <span class="slide-badge-category">Hill Station Tour</span>
+            </div>
+            <div class="slide-content-box">
+              <div>
+                <h3 class="slide-package-title">Mysore to Coorg (Madikeri & Kushalnagar)</h3>
+                <div class="slide-duration">⏱ 2 Days / 1 Night &bull; Min 500 KM &bull; Ghat Pro Driver</div>
+                <p class="slide-desc">
+                  Escape to the Scotland of India. Visit the peaceful Bylakuppe Golden Temple, enjoy river rafting and elephant interaction at Dubare Camp, scenic Abbey Falls, and Raja's Seat.
+                </p>
+                <div class="slide-places-pills">
+                  <span class="place-pill">🧘 Golden Temple (Bylakuppe)</span>
+                  <span class="place-pill">🐘 Dubare Elephant Camp</span>
+                  <span class="place-pill">🌊 Abbey Waterfalls</span>
+                  <span class="place-pill">🌅 Raja's Seat Sunset</span>
+                  <span class="place-pill">☕ Coffee Plantation</span>
+                </div>
+              </div>
+              <div class="slide-pricing-footer">
+                <div>
+                  <div class="price-label">2-Day Tour Starts</div>
+                  <div class="price-amount">₹ 6,200</div>
+                </div>
+                <button type="button" class="btn-book-slide" onclick="bookSlidePackage('Mysore to Coorg Holiday (2D/1N)', '2 Days / 1 Night Tour (From ₹6,200)')">
+                  Book on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Ooty Package -->
+          <div class="carousel-slide">
+            <div class="slide-img-box">
+              <img src="images/ooty-tea.jpg" alt="Ooty & Coonoor Tour" class="slide-img">
+              <span class="slide-badge-category">Hill Station Tour</span>
+            </div>
+            <div class="slide-content-box">
+              <div>
+                <h3 class="slide-package-title">Mysore to Ooty & Coonoor Holiday</h3>
+                <div class="slide-duration">⏱ 2 Days / 1 Night &bull; Min 500 KM &bull; 36 Hairpin Pro</div>
+                <p class="slide-desc">
+                  Drive through Bandipur & Mudumalai wildlife sanctuaries, climb the scenic Nilgiris with skilled hill drivers, visit Ooty Lake, Botanical Gardens, Doddabetta Peak, and tea estates.
+                </p>
+                <div class="slide-places-pills">
+                  <span class="place-pill">🐅 Bandipur Wildlife Forest</span>
+                  <span class="place-pill">🌸 Botanical Gardens</span>
+                  <span class="place-pill">⛰️ Doddabetta Peak</span>
+                  <span class="place-pill">🍵 Nilgiri Tea Factory</span>
+                  <span class="place-pill">🚂 Coonoor Sim's Park</span>
+                </div>
+              </div>
+              <div class="slide-pricing-footer">
+                <div>
+                  <div class="price-label">2-Day Tour Starts</div>
+                  <div class="price-amount">₹ 7,200</div>
+                </div>
+                <button type="button" class="btn-book-slide" onclick="bookSlidePackage('Mysore to Ooty & Coonoor (2D/1N)', '2 Days / 1 Night Tour (From ₹7,200)')">
+                  Book on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 4: Bangalore Airport Taxi -->
+          <div class="carousel-slide">
+            <div class="slide-img-box">
+              <img src="images/mysore-palace-day.jpg" alt="Bangalore Airport Taxi" class="slide-img">
+              <span class="slide-badge-category">Expressway Airport Taxi</span>
+            </div>
+            <div class="slide-content-box">
+              <div>
+                <h3 class="slide-package-title">Mysore to Bangalore Airport (BLR)</h3>
+                <div class="slide-duration">⏱ ~2.5 - 3 Hours &bull; 10-Lane Expressway &bull; 24x7 Available</div>
+                <p class="slide-desc">
+                  Direct doorstep pickup from anywhere in Mysuru to Kempegowda International Airport (BLR) Terminal 1 and Terminal 2 departures. Guaranteed punctual pickup for flight schedules.
+                </p>
+                <div class="slide-places-pills">
+                  <span class="place-pill">🏡 Doorstep Pickup in Mysore</span>
+                  <span class="place-pill">⚡ 10-Lane Expressway</span>
+                  <span class="place-pill">✈️ Direct Drop T1 & T2</span>
+                  <span class="place-pill">💳 Fastag Toll Included</span>
+                </div>
+              </div>
+              <div class="slide-pricing-footer">
+                <div>
+                  <div class="price-label">One-Way Drop Starts</div>
+                  <div class="price-amount">₹ 3,499</div>
+                </div>
+                <button type="button" class="btn-book-slide" onclick="bookSlidePackage('Mysore to BLR Airport Taxi', 'One-way Expressway Drop (From ₹3,499)')">
+                  Book on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 5: Per-KM Vehicle Rental Fleet -->
+          <div class="carousel-slide">
+            <div class="slide-img-box">
+              <img src="images/innova-crysta.jpg" alt="Per-KM Vehicle Rentals" class="slide-img">
+              <span class="slide-badge-category">Vehicle Rentals (Per-KM)</span>
+            </div>
+            <div class="slide-content-box">
+              <div>
+                <h3 class="slide-package-title">All Vehicles for Rent (Per-KM Rates)</h3>
+                <div class="slide-duration">⚡ Mandatory Daily Limits: 250 KM (Sedans) / 300 KM (Innova & Tempo)</div>
+                <p class="slide-desc">
+                  Rent clean, air-conditioned cabs with courteous Kannada & Hindi speaking drivers. Choose from Dzire, Etios, Ertiga, Innova Crysta, or Tempo Travellers at standard per-km rates.
+                </p>
+                <div class="slide-places-pills">
+                  <span class="place-pill">🚗 Maruti Dzire: ₹11/km (250km min)</span>
+                  <span class="place-pill">🚙 Toyota Etios: ₹12/km (250km min)</span>
+                  <span class="place-pill">🚐 Maruti Ertiga: ₹14/km (250km min)</span>
+                  <span class="place-pill">👑 Innova Crysta: ₹18/km (300km min)</span>
+                  <span class="place-pill">🚌 Tempo 12/17S: ₹22-26/km (300km min)</span>
+                </div>
+              </div>
+              <div class="slide-pricing-footer">
+                <div>
+                  <div class="price-label">Outstation Rates From</div>
+                  <div class="price-amount">₹ 11 <span style="font-size: 0.95rem; font-weight: 700; color: #64748B;">/ KM</span></div>
+                </div>
+                <button type="button" class="btn-book-slide" onclick="bookSlidePackage('Per-KM Vehicle Rental Fleet', 'Outstation Per-KM Cabs (From ₹11/km)')">
+                  Book on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 6: Personal Driver for Your Own Car -->
+          <div class="carousel-slide">
+            <div class="slide-img-box">
+              <img src="images/maruti-dzire.jpg" alt="Personal Driver for Your Car" class="slide-img">
+              <span class="slide-badge-category">Acting Driver Service</span>
+            </div>
+            <div class="slide-content-box">
+              <div>
+                <h3 class="slide-package-title">Hire a Personal Driver for Your Own Car</h3>
+                <div class="slide-duration">👨‍✈️ City Shopping &bull; Weddings &bull; Ghat Roads &bull; Night Drops</div>
+                <p class="slide-desc">
+                  Have your own car but want a stress-free journey? Hire our police-verified, experienced chauffeurs. Expert in Manual & Automatic cars, ghat sections (Ooty/Coorg), and city traffic.
+                </p>
+                <div class="slide-places-pills">
+                  <span class="place-pill">⏱️ 4 Hours City: ₹499</span>
+                  <span class="place-pill">☀️ Full Day 8 Hours: ₹899</span>
+                  <span class="place-pill">⛰️ Outstation 24h: ₹1,199/day</span>
+                  <span class="place-pill">🌙 Night Safe Drop: ₹699</span>
+                </div>
+              </div>
+              <div class="slide-pricing-footer">
+                <div>
+                  <div class="price-label">Driver Charges From</div>
+                  <div class="price-amount">₹ 499</div>
+                </div>
+                <button type="button" class="btn-book-slide" onclick="bookSlidePackage('Personal Driver for My Own Car', 'Acting Driver Service (From ₹499)')">
+                  Book on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slider Indicators / Dots -->
+      <div class="slider-dots-row" id="sliderDotsRow"></div>
+
+      <!-- Quick Subpage Exploration Buttons -->
+      <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 24px;">
+        <a href="vehicles.html" style="background: #FFFFFF; border: 1px solid var(--border-color); color: var(--text-dark); padding: 10px 20px; border-radius: var(--radius-full); font-size: 0.88rem; font-weight: 800; box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; gap: 6px;">
+          🚗 View All Vehicles & KM Rates &rarr;
+        </a>
+        <a href="packages.html" style="background: #FFFFFF; border: 1px solid var(--border-color); color: var(--text-dark); padding: 10px 20px; border-radius: var(--radius-full); font-size: 0.88rem; font-weight: 800; box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; gap: 6px;">
+          🗺️ View All Tour Itineraries &rarr;
+        </a>
+        <a href="drivers.html" style="background: #FFFFFF; border: 1px solid var(--border-color); color: var(--text-dark); padding: 10px 20px; border-radius: var(--radius-full); font-size: 0.88rem; font-weight: 800; box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; gap: 6px;">
+          👨‍✈️ Hire Driver for Your Car &rarr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       4. BASIC POLICIES & GUIDELINES
+       ========================================================================== -->
+  <section class="policies-summary-section">
+    <div class="container">
+      <div class="policy-strip-grid">
+        <div class="policy-card">
+          <h4>📌 Mandatory Daily KM Limits</h4>
+          <p>
+            Standard Karnataka transport guidelines apply: <strong>250 KM/day</strong> for Sedans & Ertiga; <strong>300 KM/day</strong> for Innova Crysta & Tempo Travellers. Calendar day: 12:00 AM to 11:59 PM.
+          </p>
+        </div>
+
+        <div class="policy-card">
+          <h4>💳 Transparent Per-KM Billing</h4>
+          <p>
+            Zero hidden charges. Pay standard per-km rate + driver batta per day. Fastag toll charges, parking fees, and interstate permits are billed at actuals.
+          </p>
+        </div>
+
+        <div class="policy-card">
+          <h4>👨‍✈️ Verified Drivers & 24x7 Help</h4>
+          <p>
+            Polite, punctual, Kannada, Hindi & English speaking drivers with extensive hill station & ghat-road experience. Doorstep pickup anywhere in Mysore.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       5. FOOTER
+       ========================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner-grid">
+        <div>
+          <div class="brand-wrap" style="margin-bottom: 12px;">
+            <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo" class="brand-logo-circle">
+            <span class="brand-main-title">TC Travels <span>Mysore</span></span>
+          </div>
+          <p style="color: #94A3B8; font-size: 0.88rem; line-height: 1.6; margin-bottom: 12px;">
+            Treks &bull; Trips &bull; Memories &bull; <em>Let's Explore!</em><br>
+            Your trusted travel agency in Mysuru for Per-KM car rentals, outstation holiday packages, airport drops, and acting personal drivers.
+          </p>
+          <div style="color: var(--accent-gold); font-size: 0.86rem; font-weight: 700;">
+            📍 Near Mysore Palace, Gandhi Square, Mysuru - 570001
+          </div>
+        </div>
+
+        <div>
+          <h5 style="color: #FFFFFF; font-size: 0.95rem; font-weight: 800; margin-bottom: 12px;">Quick Links</h5>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem; color: #CBD5E1;">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="vehicles.html">Vehicles & KM Rates</a></li>
+            <li><a href="drivers.html">Personal Drivers</a></li>
+            <li><a href="packages.html">Tour Packages</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 style="color: #FFFFFF; font-size: 0.95rem; font-weight: 800; margin-bottom: 12px;">Popular Tours</h5>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem; color: #CBD5E1;">
+            <li><a href="packages.html">Mysore Palace Sightseeing</a></li>
+            <li><a href="packages.html">Coorg 2D/1N Holiday</a></li>
+            <li><a href="packages.html">Ooty & Coonoor Hill Tour</a></li>
+            <li><a href="packages.html">Bangalore Airport Drop</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 style="color: #FFFFFF; font-size: 0.95rem; font-weight: 800; margin-bottom: 12px;">Direct Contact</h5>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem; color: #CBD5E1;">
+            <div>Helpline: <a href="tel:+919741422544" class="js-phone-link" style="color: #FFFFFF; font-weight: 800;">+91 97414 22544</a></div>
+            <div>WhatsApp: <a href="https://wa.me/919741422544" target="_blank" class="js-whatsapp-link" style="color: var(--whatsapp-green); font-weight: 800;">+91 97414 22544</a></div>
+            <div>Email: <span style="color: #CBD5E1;">contact@tctravelsmysore.com</span></div>
+            <div style="color: var(--accent-gold); font-weight: 700; margin-top: 4px;">24x7 Round-The-Clock Support</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom-row">
+        <div>&copy; 2026 TC Travels Mysore. All Rights Reserved. &bull; <a href="admin.html" style="color: #64748B; font-size: 0.78rem;">🔒 Admin Access</a></div>
+        <div>Treks &bull; Trips &bull; Memories &bull; <em>Let's Explore!</em></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Call & WhatsApp Action Stack (Call above WhatsApp) -->
+  <div class="floating-actions-stack">
+    <a href="tel:+919741422544" class="floating-btn-call js-phone-link" aria-label="Call TC Travels Mysore" title="Call +91 97414 22544">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+      </svg>
+    </a>
+    <a href="https://wa.me/919741422544" target="_blank" class="floating-btn-wa js-whatsapp-link" aria-label="Chat on WhatsApp" title="WhatsApp +91 97414 22544">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+      </svg>
+    </a>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

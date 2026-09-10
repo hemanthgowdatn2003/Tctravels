@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | TC Travels Mysore</title>
+  <link rel="icon" type="image/jpeg" href="images/tc-travels-logo.jpg">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0A0F1D;
+      --bg-sidebar: #0F172A;
+      --bg-card: #FFFFFF;
+      --border-color: #E2E8F0;
+      --text-dark: #0F172A;
+      --text-muted: #64748B;
+      --accent-gold: #F59E0B;
+      --cta-orange: #EA580C;
+      --cta-orange-hover: #C2410C;
+      --whatsapp-green: #25D366;
+      --danger-red: #EF4444;
+      --danger-hover: #DC2626;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: #F1F5F9;
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* Top Bar */
+    .admin-topbar {
+      background: var(--bg-dark);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0 24px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #FFFFFF;
+    }
+
+    .admin-brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-gold);
+      object-fit: cover;
+    }
+
+    .admin-brand h1 {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .admin-brand h1 span {
+      color: var(--accent-gold);
+    }
+
+    .admin-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .btn-view-site {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .btn-view-site:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-logout {
+      background: #EF4444;
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Admin Shell Layout */
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 68px);
+    }
+
+    /* Sidebar Navigation */
+    .admin-sidebar {
+      background: var(--bg-sidebar);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-tab-btn {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .sidebar-tab-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-tab-btn.active {
+      color: #FFFFFF;
+      background: var(--cta-orange);
+    }
+
+    /* Content Area */
+    .admin-main-content {
+      padding: 32px;
+      max-width: 1150px;
+      padding-bottom: 120px;
+    }
+
+    .tab-section {
+      display: none;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    .section-head {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .section-head h2 {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .section-head p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+
+    .btn-action-primary {
+      background: #16A34A;
+      color: #FFFFFF;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+      transition: background 0.2s;
+    }
+
+    .btn-action-primary:hover {
+      background: #15803D;
+    }
+
+    /* Form Cards */
+    .admin-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 26px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title-bar {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title-bar h3 {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .btn-delete-item {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FCA5A5;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-delete-item:hover {
+      background: #DC2626;
+      color: #FFFFFF;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      color: var(--text-dark);
+      background: #FFFFFF;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--cta-orange);
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+    }
+
+    .help-hint {
+      font-size: 0.76rem;
+      color: #94A3B8;
+      margin-top: 4px;
+    }
+
+    /* Sticky Bottom Action Bar */
+    .sticky-save-bar {
+      position: fixed;
+      bottom: 0;
+      left: 260px;
+      right: 0;
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+      z-index: 400;
+    }
+
+    .btn-save-all {
+      background: var(--cta-orange);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+      transition: background 0.2s;
+    }
+
+    .btn-save-all:hover {
+      background: #C2410C;
+    }
+
+    /* Toast Notification */
+    .toast-popup {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      background: #10B981;
+      color: #FFFFFF;
+      padding: 14px 22px;
+      border-radius: 8px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      transform: translateY(-20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast-popup.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box-card {
+      background: #FFFFFF;
+      border-radius: 14px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      position: relative;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: #F1F5F9;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Login Modal Specific */
+    .login-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 29, 0.95);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 2100;
+    }
+
+    .login-box {
+      background: #FFFFFF;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      padding: 36px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .login-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 3px solid var(--accent-gold);
+      margin: 0 auto 16px;
+      object-fit: cover;
+    }
+
+    .login-title {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .login-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .login-alert {
+      background: #FEE2E2;
+      color: #B91C1C;
+      border: 1px solid #FCA5A5;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .btn-login-submit {
+      width: 100%;
+      background: var(--cta-orange);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+
+    .btn-login-submit:hover {
+      background: #C2410C;
+    }
+
+    .login-default-hint {
+      margin-top: 18px;
+      font-size: 0.8rem;
+      color: #64748B;
+      background: #F8FAFC;
+      border: 1px dashed #CBD5E1;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+      .admin-sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .sticky-save-bar {
+        left: 0;
+      }
+      .form-grid-2, .form-grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. LOGIN MODAL (Visible when not logged in)
+       ========================================================================== -->
+  <div class="login-modal-overlay" id="loginModalOverlay">
+    <div class="login-box">
+      <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo" class="login-logo">
+      <h2 class="login-title">TC Travels Admin</h2>
+      <p class="login-subtitle">Sign in to add & manage vehicles, packages, rates & contacts</p>
+
+      <div class="login-alert" id="loginAlertBox">Invalid username or password</div>
+
+      <form id="adminLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" class="form-input" placeholder="Enter username" value="admin" required autofocus>
+        </div>
+
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required>
+        </div>
+
+        <button type="submit" class="btn-login-submit" id="loginSubmitBtn">
+          Login to Dashboard
+        </button>
+
+        <div class="login-default-hint">
+          🔑 Default Username: <strong>admin</strong> | Password: <strong>admin123</strong>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. TOP BAR
+       ========================================================================== -->
+  <header class="admin-topbar">
+    <div class="admin-brand">
+      <img src="images/tc-travels-logo.jpg" alt="TC Travels Logo">
+      <h1>TC Travels <span>Admin Portal</span></h1>
+    </div>
+
+    <div class="admin-topbar-actions">
+      <a href="index.html" target="_blank" class="btn-view-site">
+        🌐 View Live Site
+      </a>
+      <button type="button" class="btn-logout" id="logoutBtn">
+        🚪 Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       3. DASHBOARD MAIN LAYOUT
+       ========================================================================== -->
+  <div class="admin-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <button type="button" class="sidebar-tab-btn active" data-tab="tabCompany">
+        📞 Company & Contacts
+      </button>
+      <button type="button" class="sidebar-tab-btn" data-tab="tabVehicles">
+        🚗 Vehicles & Per-KM Rates
+      </button>
+      <button type="button" class="sidebar-tab-btn" data-tab="tabDrivers">
+        👨‍✈️ Personal Driver Rates
+      </button>
+      <button type="button" class="sidebar-tab-btn" data-tab="tabPackages">
+        🗺️ Tour Packages
+      </button>
+      <button type="button" class="sidebar-tab-btn" data-tab="tabSecurity">
+        ⚙️ Change Password
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main-content">
+
+      <!-- ====================================================================
+           TAB 1: COMPANY & CONTACT DETAILS
+           ==================================================================== -->
+      <section class="tab-section active" id="tabCompany">
+        <div class="section-head">
+          <div>
+            <h2>Company & Contact Information</h2>
+            <p>Update phone numbers, WhatsApp link, office address, and business taglines.</p>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>Direct Contact Numbers</h3>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="inpPhone">Primary Helpline Number</label>
+              <input type="text" id="inpPhone" class="form-input" placeholder="+91 97414 22544">
+              <div class="help-hint">Format: +91 97414 22544</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inpWhatsapp">WhatsApp Number (Digits only)</label>
+              <input type="text" id="inpWhatsapp" class="form-input" placeholder="919741422544">
+              <div class="help-hint">Format: 919741422544 (without + or spaces)</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inpEmail">Contact Email Address</label>
+              <input type="email" id="inpEmail" class="form-input" placeholder="contact@tctravelsmysore.com">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inpHours">Operating Hours Tagline</label>
+              <input type="text" id="inpHours" class="form-input" placeholder="24x7 Round-The-Clock Service">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inpAddress">Office Address</label>
+            <textarea id="inpAddress" class="form-textarea" rows="2" placeholder="Near Mysore Palace, Gandhi Square, Mysuru - 570001"></textarea>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>Brand Taglines & Story</h3>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="inpTagline">Brand Tagline</label>
+              <input type="text" id="inpTagline" class="form-input" placeholder="Treks • Trips • Memories — Let's Explore!">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inpKannadaTagline">Kannada Welcome Tagline</label>
+              <input type="text" id="inpKannadaTagline" class="form-input" placeholder="ನಿಮ್ಮ ವಿಶ್ವಾಸಾರ್ಹ ಮೈಸೂರು ಟ್ರಾವೆಲ್ಸ್">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 2: VEHICLES & PER-KM PRICING
+           ==================================================================== -->
+      <section class="tab-section" id="tabVehicles">
+        <div class="section-head">
+          <div>
+            <h2>Vehicles & Per-KM Pricing</h2>
+            <p>Add new vehicles, delete vehicles, and edit per-km rates & mandatory daily km limits.</p>
+          </div>
+          <button type="button" class="btn-action-primary" id="btnOpenAddVehicle">
+            ➕ Add New Vehicle
+          </button>
+        </div>
+
+        <div id="vehiclesEditContainer">
+          <!-- Injected dynamically by JS -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 3: PERSONAL DRIVER RATES
+           ==================================================================== -->
+      <section class="tab-section" id="tabDrivers">
+        <div class="section-head">
+          <div>
+            <h2>Personal Driver / Acting Driver Rates</h2>
+            <p>Add new driver service packages, delete, or edit pricing for customer car driver services.</p>
+          </div>
+          <button type="button" class="btn-action-primary" id="btnOpenAddDriver">
+            ➕ Add Driver Service
+          </button>
+        </div>
+
+        <div id="driversEditContainer">
+          <!-- Injected dynamically by JS -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 4: TOUR PACKAGES
+           ==================================================================== -->
+      <section class="tab-section" id="tabPackages">
+        <div class="section-head">
+          <div>
+            <h2>Holiday & Tour Packages</h2>
+            <p>Add new tour packages, delete packages, and edit prices & destinations.</p>
+          </div>
+          <button type="button" class="btn-action-primary" id="btnOpenAddPackage">
+            ➕ Add New Tour Package
+          </button>
+        </div>
+
+        <div id="packagesEditContainer">
+          <!-- Injected dynamically by JS -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           TAB 5: ADMIN PASSWORD SETTINGS
+           ==================================================================== -->
+      <section class="tab-section" id="tabSecurity">
+        <div class="section-head">
+          <div>
+            <h2>Admin Login Settings</h2>
+            <p>Change the administrator username and password.</p>
+          </div>
+        </div>
+
+        <div class="admin-card" style="max-width: 500px;">
+          <form id="changePasswordForm">
+            <div class="form-group">
+              <label class="form-label" for="inpNewUsername">Admin Username</label>
+              <input type="text" id="inpNewUsername" class="form-input" value="admin" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inpCurrentPassword">Current Password *</label>
+              <input type="password" id="inpCurrentPassword" class="form-input" placeholder="Current password" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inpNewPassword">New Password *</label>
+              <input type="password" id="inpNewPassword" class="form-input" placeholder="New password" required>
+            </div>
+
+            <button type="submit" class="btn-save-all" style="width: 100%; justify-content: center; margin-top: 10px;">
+              Update Login Password
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 1: ADD NEW VEHICLE
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modalAddVehicle">
+    <div class="modal-box-card">
+      <button type="button" class="modal-close-btn js-modal-close">&times;</button>
+      <h3 class="modal-title">Add New Vehicle to Fleet</h3>
+      <p class="modal-subtitle">Add a car, SUV, or tempo to your live rental catalog</p>
+
+      <form id="formAddVehicle">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Vehicle Name *</label>
+            <input type="text" id="addVName" class="form-input" placeholder="e.g. Maruti Suzuki Brezza" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select id="addVCategory" class="form-select" required>
+              <option value="sedan">Prime Sedan</option>
+              <option value="suv" selected>Family SUV</option>
+              <option value="tempo">Tempo Traveller</option>
+              <option value="hatchback">Hatchback</option>
+              <option value="luxury">VIP Luxury</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Category Label</label>
+            <input type="text" id="addVCatLabel" class="form-input" placeholder="e.g. Compact 5-Seater SUV" value="Compact SUV">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Promotional Tag</label>
+            <input type="text" id="addVTag" class="form-input" placeholder="e.g. Popular Choice" value="Popular Choice">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Car Image</label>
+          <select id="addVImage" class="form-select">
+            <option value="images/maruti-dzire.jpg">Maruti Dzire (images/maruti-dzire.jpg)</option>
+            <option value="images/innova-crysta.jpg">Toyota Innova Crysta (images/innova-crysta.jpg)</option>
+            <option value="images/maruti-ertiga.jpg">Maruti Ertiga (images/maruti-ertiga.jpg)</option>
+            <option value="images/tempo-traveller.jpg">Tempo Traveller (images/tempo-traveller.jpg)</option>
+            <option value="images/toyota-etios.jpg">Toyota Etios (images/toyota-etios.jpg)</option>
+            <option value="images/maruti-swift.jpg">Maruti Swift (images/maruti-swift.jpg)</option>
+            <option value="images/toyota-fortuner.jpg">Toyota Fortuner (images/toyota-fortuner.jpg)</option>
+          </select>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Seats</label>
+            <input type="text" id="addVSeats" class="form-input" value="4 Passengers">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Luggage</label>
+            <input type="text" id="addVLuggage" class="form-input" value="2 Large Bags">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">AC Type</label>
+            <input type="text" id="addVAC" class="form-input" value="Chilled AC">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Per-KM Outstation Rate *</label>
+            <input type="text" id="addVPricePerKm" class="form-input" placeholder="e.g. ₹ 13" value="₹ 13" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mandatory Daily KM Limit *</label>
+            <input type="text" id="addVMinKm" class="form-input" placeholder="e.g. 250 KM / Day Mandatory" value="250 KM / Day Mandatory" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Driver Batta / Allowance</label>
+            <input type="text" id="addVBatta" class="form-input" value="₹ 350 / Day">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Local Package (8h/80km) Price</label>
+            <input type="text" id="addVLocalPrice" class="form-input" value="₹ 2,200">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Features (comma-separated)</label>
+          <input type="text" id="addVFeatures" class="form-input" value="Fastag Enabled, Experienced Driver, Sanitized Car, Phone Charger">
+        </div>
+
+        <button type="submit" class="btn-action-primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem;">
+          Add Vehicle to Live Catalog
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 2: ADD NEW TOUR PACKAGE
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modalAddPackage">
+    <div class="modal-box-card">
+      <button type="button" class="modal-close-btn js-modal-close">&times;</button>
+      <h3 class="modal-title">Add New Tour Package</h3>
+      <p class="modal-subtitle">Create a holiday package that will display on your website & home slider</p>
+
+      <form id="formAddPackage">
+        <div class="form-group">
+          <label class="form-label">Tour Package Title *</label>
+          <input type="text" id="addPkgTitle" class="form-input" placeholder="e.g. Mysore to Wayanad Wildlife Holiday" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Duration *</label>
+            <input type="text" id="addPkgDuration" class="form-input" placeholder="e.g. 2 Days / 1 Night (500 KM Min)" value="2 Days / 1 Night (500 KM Min)" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Starting Price *</label>
+            <input type="text" id="addPkgPrice" class="form-input" placeholder="e.g. ₹ 6,800" value="₹ 6,800" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tour Photo</label>
+          <select id="addPkgImage" class="form-select">
+            <option value="images/mysore-palace.jpg">Mysore Palace (images/mysore-palace.jpg)</option>
+            <option value="images/coorg-hills.jpg">Coorg Hills (images/coorg-hills.jpg)</option>
+            <option value="images/ooty-tea.jpg">Ooty Tea Estates (images/ooty-tea.jpg)</option>
+            <option value="images/mysore-palace-day.jpg">Palace Day / Highway (images/mysore-palace-day.jpg)</option>
+            <option value="images/brindavan-gardens.jpg">Brindavan Gardens (images/brindavan-gardens.jpg)</option>
+            <option value="images/chamundi-hill.jpg">Chamundi Hill (images/chamundi-hill.jpg)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Sights & Places Included (comma-separated) *</label>
+          <input type="text" id="addPkgPlaces" class="form-input" placeholder="e.g. Banasura Sagar Dam, Edakkal Caves, Chembra Peak, Pookode Lake" value="Banasura Sagar Dam, Edakkal Caves, Chembra Peak, Pookode Lake" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Highlights / Short Description</label>
+          <textarea id="addPkgHighlights" class="form-textarea" rows="2" placeholder="e.g. Doorstep pickup, scenic ghat roads certified driver, flexible temple timings.">Doorstep pickup, scenic ghat roads certified driver, flexible temple timings.</textarea>
+        </div>
+
+        <button type="submit" class="btn-action-primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem;">
+          Add Package to Website & Home Slider
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 3: ADD NEW DRIVER SERVICE
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modalAddDriver">
+    <div class="modal-box-card">
+      <button type="button" class="modal-close-btn js-modal-close">&times;</button>
+      <h3 class="modal-title">Add New Driver Service</h3>
+      <p class="modal-subtitle">Offer a custom personal driver package for customer cars</p>
+
+      <form id="formAddDriver">
+        <div class="form-group">
+          <label class="form-label">Service Title *</label>
+          <input type="text" id="addDrvTitle" class="form-input" placeholder="e.g. Weekend Outstation Chauffeur" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Duration Text *</label>
+            <input type="text" id="addDrvDuration" class="form-input" placeholder="e.g. 48 Hours Weekend" value="48 Hours Weekend" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Service Price *</label>
+            <input type="text" id="addDrvPrice" class="form-input" placeholder="e.g. ₹ 2,299" value="₹ 2,299" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Overtime Rate</label>
+            <input type="text" id="addDrvOvertime" class="form-input" placeholder="e.g. ₹ 120 / extra hour" value="₹ 120 / extra hour">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Badge Label</label>
+            <input type="text" id="addDrvBadge" class="form-input" placeholder="e.g. Weekend Special" value="Weekend Special">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Short Description</label>
+          <input type="text" id="addDrvSubtitle" class="form-input" placeholder="e.g. Relax with your family while our verified chauffeur drives your car.">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Features (comma-separated)</label>
+          <textarea id="addDrvFeatures" class="form-textarea" rows="2">Police background checked driver, Expert in Manual & Automatic, Curvy hill roads specialist</textarea>
+        </div>
+
+        <button type="submit" class="btn-action-primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem;">
+          Add Driver Service
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       STICKY BOTTOM SAVE BAR
+       ========================================================================== -->
+  <div class="sticky-save-bar">
+    <div>
+      <strong>⚡ Immediate Live Update:</strong>
+      <span style="color: #94A3B8; font-size: 0.88rem; margin-left: 6px;">
+        Clicking save updates the live website across all pages immediately.
+      </span>
+    </div>
+    <button type="button" class="btn-save-all" id="btnGlobalSave">
+      💾 Save All Changes
+    </button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-popup" id="toastPopup">
+    ✅ Changes saved successfully to live website!
+  </div>
+
+  <!-- JavaScript Admin Controller -->
+  <script>
+    let SITE_DATA = null;
+    let AUTH_TOKEN = sessionStorage.getItem('tc_admin_token') || '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTabs();
+      checkAuth();
+      setupAuthHandlers();
+      setupSaveHandler();
+      setupPasswordForm();
+      setupModalHandlers();
+      setupAddEntityForms();
+    });
+
+    // 1. Check Authentication State
+    function checkAuth() {
+      const overlay = document.getElementById('loginModalOverlay');
+      if (AUTH_TOKEN) {
+        overlay.style.display = 'none';
+        loadSiteData();
+      } else {
+        overlay.style.display = 'flex';
+      }
+    }
+
+    // 2. Setup Login / Logout
+    function setupAuthHandlers() {
+      const loginForm = document.getElementById('adminLoginForm');
+      const loginAlert = document.getElementById('loginAlertBox');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        loginAlert.style.display = 'none';
+
+        try {
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+          const result = await res.json();
+
+          if (result.success && result.token) {
+            AUTH_TOKEN = result.token;
+            sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
+            document.getElementById('loginModalOverlay').style.display = 'none';
+            loadSiteData();
+            showToast('Welcome back, Admin!');
+          } else {
+            loginAlert.innerText = result.error || 'Invalid username or password';
+            loginAlert.style.display = 'block';
+          }
+        } catch (err) {
+          loginAlert.innerText = 'Server error. Please ensure node server is running.';
+          loginAlert.style.display = 'block';
+        }
+      });
+
+      logoutBtn.addEventListener('click', async () => {
+        if (AUTH_TOKEN) {
+          try {
+            await fetch('/api/logout', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+            });
+          } catch (e) {}
+        }
+        AUTH_TOKEN = '';
+        sessionStorage.removeItem('tc_admin_token');
+        document.getElementById('loginModalOverlay').style.display = 'flex';
+      });
+    }
+
+    // 3. Tab Switching
+    function initTabs() {
+      document.querySelectorAll('.sidebar-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.sidebar-tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+
+          btn.classList.add('active');
+          const targetSection = document.getElementById(btn.dataset.tab);
+          if (targetSection) targetSection.classList.add('active');
+        });
+      });
+    }
+
+    // 4. Load Data from Server API
+    async function loadSiteData() {
+      try {
+        const res = await fetch('/api/data');
+        SITE_DATA = await res.json();
+        populateFields();
+      } catch (err) {
+        alert('Could not fetch site data: ' + err.message);
+      }
+    }
+
+    // 5. Populate All Form Fields
+    function populateFields() {
+      if (!SITE_DATA) return;
+
+      // Company Fields
+      const c = SITE_DATA.company || {};
+      document.getElementById('inpPhone').value = c.phone || '';
+      document.getElementById('inpWhatsapp').value = c.whatsappNumber || '';
+      document.getElementById('inpEmail').value = c.email || '';
+      document.getElementById('inpHours').value = c.operatingHours || '';
+      document.getElementById('inpAddress').value = c.address || '';
+      document.getElementById('inpTagline').value = c.tagline || '';
+      document.getElementById('inpKannadaTagline').value = c.kannadaTagline || '';
+
+      renderVehiclesEditor();
+      renderDriversEditor();
+      renderPackagesEditor();
+    }
+
+    // Render Vehicle Cards with Delete Button
+    function renderVehiclesEditor() {
+      const container = document.getElementById('vehiclesEditContainer');
+      const fleet = SITE_DATA.fleet || [];
+
+      if (fleet.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; background: #FFF; border-radius: 8px; color: #64748B;">No vehicles found. Click "+ Add New Vehicle" above to add one!</div>';
+        return;
+      }
+
+      container.innerHTML = fleet.map((car, idx) => `
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>🚗 ${car.name} <span style="font-size: 0.85rem; color: #64748B; font-weight: normal;">(${car.categoryLabel})</span></h3>
+            <button type="button" class="btn-delete-item" onclick="deleteVehicle(${idx})">
+              🗑️ Delete Vehicle
+            </button>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Vehicle Name</label>
+              <input type="text" class="form-input js-fleet-name" data-idx="${idx}" value="${car.name}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select js-fleet-category" data-idx="${idx}">
+                <option value="sedan" ${car.category === 'sedan' ? 'selected' : ''}>Prime Sedan</option>
+                <option value="suv" ${car.category === 'suv' ? 'selected' : ''}>Family SUV</option>
+                <option value="tempo" ${car.category === 'tempo' ? 'selected' : ''}>Tempo Traveller</option>
+                <option value="hatchback" ${car.category === 'hatchback' ? 'selected' : ''}>Hatchback</option>
+                <option value="luxury" ${car.category === 'luxury' ? 'selected' : ''}>VIP Luxury</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Outstation Per-KM Rate</label>
+              <input type="text" class="form-input js-fleet-price" data-idx="${idx}" value="${car.pricePerKm}">
+              <div class="help-hint">Example: ₹ 11, ₹ 18</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Mandatory Daily KM Limit</label>
+              <input type="text" class="form-input js-fleet-minkm" data-idx="${idx}" value="${car.minKmPerDay}">
+              <div class="help-hint">Example: 250 KM / Day Mandatory</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Driver Batta / Allowance</label>
+              <input type="text" class="form-input js-fleet-batta" data-idx="${idx}" value="${car.driverBatta}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Local Package (8h/80km) Price</label>
+              <input type="text" class="form-input js-fleet-localprice" data-idx="${idx}" value="${car.localPackagePrice}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Vehicle Features (comma-separated)</label>
+            <input type="text" class="form-input js-fleet-features" data-idx="${idx}" value="${(car.features || []).join(', ')}">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render Driver Services with Delete Button
+    function renderDriversEditor() {
+      const container = document.getElementById('driversEditContainer');
+      const services = SITE_DATA.driverServices || [];
+
+      if (services.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; background: #FFF; border-radius: 8px; color: #64748B;">No driver services found. Click "+ Add Driver Service" above!</div>';
+        return;
+      }
+
+      container.innerHTML = services.map((d, idx) => `
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>👨‍✈️ ${d.title}</h3>
+            <button type="button" class="btn-delete-item" onclick="deleteDriver(${idx})">
+              🗑️ Delete Service
+            </button>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Service Title</label>
+              <input type="text" class="form-input js-driver-title" data-idx="${idx}" value="${d.title}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Duration</label>
+              <input type="text" class="form-input js-driver-duration" data-idx="${idx}" value="${d.duration}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Service Price</label>
+              <input type="text" class="form-input js-driver-price" data-idx="${idx}" value="${d.price}">
+              <div class="help-hint">Example: ₹ 499, ₹ 899, ₹ 1,199</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Extra Hour / Overtime</label>
+              <input type="text" class="form-input js-driver-overtime" data-idx="${idx}" value="${d.overtime}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Subtitle / Description</label>
+            <input type="text" class="form-input js-driver-subtitle" data-idx="${idx}" value="${d.subtitle || ''}">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render Tour Packages with Delete Button
+    function renderPackagesEditor() {
+      const container = document.getElementById('packagesEditContainer');
+      const tours = SITE_DATA.tours || [];
+
+      if (tours.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; background: #FFF; border-radius: 8px; color: #64748B;">No packages found. Click "+ Add New Tour Package" above!</div>';
+        return;
+      }
+
+      container.innerHTML = tours.map((t, idx) => `
+        <div class="admin-card">
+          <div class="card-title-bar">
+            <h3>🗺️ ${t.title}</h3>
+            <button type="button" class="btn-delete-item" onclick="deletePackage(${idx})">
+              🗑️ Delete Package
+            </button>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Tour Package Title</label>
+              <input type="text" class="form-input js-tour-title" data-idx="${idx}" value="${t.title}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Duration Text</label>
+              <input type="text" class="form-input js-tour-duration" data-idx="${idx}" value="${t.duration}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Starting Package Price</label>
+              <input type="text" class="form-input js-tour-price" data-idx="${idx}" value="${t.priceStarting}">
+              <div class="help-hint">Example: ₹ 1,800, ₹ 6,200</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tour Photo</label>
+              <input type="text" class="form-input js-tour-image" data-idx="${idx}" value="${t.image || ''}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Places Included (Comma separated)</label>
+            <input type="text" class="form-input js-tour-places" data-idx="${idx}" value="${(t.places || []).join(', ')}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Highlights</label>
+            <input type="text" class="form-input js-tour-highlights" data-idx="${idx}" value="${t.highlights || ''}">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 6. Delete Actions
+    function deleteVehicle(index) {
+      const car = SITE_DATA.fleet[index];
+      if (confirm(`Are you sure you want to delete "${car.name}" from the fleet?`)) {
+        SITE_DATA.fleet.splice(index, 1);
+        renderVehiclesEditor();
+        showToast(`Vehicle "${car.name}" deleted. Remember to click Save!`);
+      }
+    }
+
+    function deletePackage(index) {
+      const pkg = SITE_DATA.tours[index];
+      if (confirm(`Are you sure you want to delete tour package "${pkg.title}"?`)) {
+        SITE_DATA.tours.splice(index, 1);
+        renderPackagesEditor();
+        showToast(`Package "${pkg.title}" deleted. Remember to click Save!`);
+      }
+    }
+
+    function deleteDriver(index) {
+      const drv = SITE_DATA.driverServices[index];
+      if (confirm(`Are you sure you want to delete driver service "${drv.title}"?`)) {
+        SITE_DATA.driverServices.splice(index, 1);
+        renderDriversEditor();
+        showToast(`Driver service "${drv.title}" deleted. Remember to click Save!`);
+      }
+    }
+
+    // 7. Modal Handlers
+    function setupModalHandlers() {
+      // Open Buttons
+      document.getElementById('btnOpenAddVehicle').addEventListener('click', () => {
+        document.getElementById('modalAddVehicle').classList.add('open');
+      });
+      document.getElementById('btnOpenAddPackage').addEventListener('click', () => {
+        document.getElementById('modalAddPackage').classList.add('open');
+      });
+      document.getElementById('btnOpenAddDriver').addEventListener('click', () => {
+        document.getElementById('modalAddDriver').classList.add('open');
+      });
+
+      // Close Buttons
+      document.querySelectorAll('.js-modal-close').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.target.closest('.modal-backdrop').classList.remove('open');
+        });
+      });
+
+      document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.addEventListener('click', (e) => {
+          if (e.target === backdrop) backdrop.classList.remove('open');
+        });
+      });
+    }
+
+    // 8. Add Forms (Vehicles, Packages, Drivers)
+    function setupAddEntityForms() {
+      // Add Vehicle Form
+      document.getElementById('formAddVehicle').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('addVName').value.trim();
+        const category = document.getElementById('addVCategory').value;
+        const categoryLabel = document.getElementById('addVCatLabel').value.trim();
+        const tag = document.getElementById('addVTag').value.trim();
+        const image = document.getElementById('addVImage').value;
+        const seats = document.getElementById('addVSeats').value.trim();
+        const luggage = document.getElementById('addVLuggage').value.trim();
+        const ac = document.getElementById('addVAC').value.trim();
+        const pricePerKm = document.getElementById('addVPricePerKm').value.trim();
+        const minKmPerDay = document.getElementById('addVMinKm').value.trim();
+        const driverBatta = document.getElementById('addVBatta').value.trim();
+        const localPackagePrice = document.getElementById('addVLocalPrice').value.trim();
+        const features = document.getElementById('addVFeatures').value.split(',').map(s => s.trim()).filter(Boolean);
+
+        const newCar = {
+          id: 'v-' + Date.now(),
+          name,
+          category,
+          categoryLabel,
+          tag,
+          image,
+          seats,
+          luggage,
+          ac,
+          fuel: 'Diesel / Petrol',
+          transmission: 'Manual / Automatic',
+          pricePerKm,
+          minKmPerDay,
+          minKmValue: parseInt(minKmPerDay) || 250,
+          driverBatta,
+          localPackagePrice,
+          localPackageDetails: '8 Hours / 80 KM',
+          features
+        };
+
+        SITE_DATA.fleet.push(newCar);
+        document.getElementById('modalAddVehicle').classList.remove('open');
+        renderVehiclesEditor();
+        showToast(`Vehicle "${name}" added! Click "Save All Changes" to publish.`);
+      });
+
+      // Add Package Form
+      document.getElementById('formAddPackage').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('addPkgTitle').value.trim();
+        const duration = document.getElementById('addPkgDuration').value.trim();
+        const priceStarting = document.getElementById('addPkgPrice').value.trim();
+        const image = document.getElementById('addPkgImage').value;
+        const places = document.getElementById('addPkgPlaces').value.split(',').map(s => s.trim()).filter(Boolean);
+        const highlights = document.getElementById('addPkgHighlights').value.trim();
+
+        const newPkg = {
+          id: 'pkg-' + Date.now(),
+          title,
+          duration,
+          priceStarting,
+          image,
+          places,
+          highlights
+        };
+
+        SITE_DATA.tours.push(newPkg);
+        document.getElementById('modalAddPackage').classList.remove('open');
+        renderPackagesEditor();
+        showToast(`Tour Package "${title}" added! Click "Save All Changes" to publish.`);
+      });
+
+      // Add Driver Form
+      document.getElementById('formAddDriver').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('addDrvTitle').value.trim();
+        const duration = document.getElementById('addDrvDuration').value.trim();
+        const price = document.getElementById('addDrvPrice').value.trim();
+        const overtime = document.getElementById('addDrvOvertime').value.trim();
+        const badge = document.getElementById('addDrvBadge').value.trim();
+        const subtitle = document.getElementById('addDrvSubtitle').value.trim();
+        const features = document.getElementById('addDrvFeatures').value.split(',').map(s => s.trim()).filter(Boolean);
+
+        const newDriver = {
+          id: 'drv-' + Date.now(),
+          title,
+          duration,
+          price,
+          overtime,
+          badge,
+          subtitle,
+          features
+        };
+
+        SITE_DATA.driverServices.push(newDriver);
+        document.getElementById('modalAddDriver').classList.remove('open');
+        renderDriversEditor();
+        showToast(`Driver Service "${title}" added! Click "Save All Changes" to publish.`);
+      });
+    }
+
+    // 9. Global Save Button Handler
+    function setupSaveHandler() {
+      const saveBtn = document.getElementById('btnGlobalSave');
+
+      saveBtn.addEventListener('click', async () => {
+        if (!SITE_DATA) return;
+
+        // 1. Gather Company Details
+        SITE_DATA.company = SITE_DATA.company || {};
+        SITE_DATA.company.phone = document.getElementById('inpPhone').value.trim();
+        SITE_DATA.company.whatsappNumber = document.getElementById('inpWhatsapp').value.trim();
+        SITE_DATA.company.email = document.getElementById('inpEmail').value.trim();
+        SITE_DATA.company.operatingHours = document.getElementById('inpHours').value.trim();
+        SITE_DATA.company.address = document.getElementById('inpAddress').value.trim();
+        SITE_DATA.company.tagline = document.getElementById('inpTagline').value.trim();
+        SITE_DATA.company.kannadaTagline = document.getElementById('inpKannadaTagline').value.trim();
+
+        // 2. Gather Fleet In-Place Edits
+        document.querySelectorAll('.js-fleet-name').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].name = input.value.trim();
+        });
+        document.querySelectorAll('.js-fleet-category').forEach(select => {
+          const idx = parseInt(select.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].category = select.value;
+        });
+        document.querySelectorAll('.js-fleet-price').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].pricePerKm = input.value.trim();
+        });
+        document.querySelectorAll('.js-fleet-minkm').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].minKmPerDay = input.value.trim();
+        });
+        document.querySelectorAll('.js-fleet-batta').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].driverBatta = input.value.trim();
+        });
+        document.querySelectorAll('.js-fleet-localprice').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx]) SITE_DATA.fleet[idx].localPackagePrice = input.value.trim();
+        });
+        document.querySelectorAll('.js-fleet-features').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.fleet[idx]) {
+            SITE_DATA.fleet[idx].features = input.value.split(',').map(s => s.trim()).filter(Boolean);
+          }
+        });
+
+        // 3. Gather Driver In-Place Edits
+        document.querySelectorAll('.js-driver-title').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].title = input.value.trim();
+        });
+        document.querySelectorAll('.js-driver-duration').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].duration = input.value.trim();
+        });
+        document.querySelectorAll('.js-driver-price').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].price = input.value.trim();
+        });
+        document.querySelectorAll('.js-driver-overtime').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].overtime = input.value.trim();
+        });
+        document.querySelectorAll('.js-driver-subtitle').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.driverServices[idx]) SITE_DATA.driverServices[idx].subtitle = input.value.trim();
+        });
+
+        // 4. Gather Tour In-Place Edits
+        document.querySelectorAll('.js-tour-title').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].title = input.value.trim();
+        });
+        document.querySelectorAll('.js-tour-price').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].priceStarting = input.value.trim();
+        });
+        document.querySelectorAll('.js-tour-duration').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].duration = input.value.trim();
+        });
+        document.querySelectorAll('.js-tour-image').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].image = input.value.trim();
+        });
+        document.querySelectorAll('.js-tour-places').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.tours[idx]) {
+            SITE_DATA.tours[idx].places = input.value.split(',').map(s => s.trim()).filter(Boolean);
+          }
+        });
+        document.querySelectorAll('.js-tour-highlights').forEach(input => {
+          const idx = parseInt(input.dataset.idx, 10);
+          if (SITE_DATA.tours[idx]) SITE_DATA.tours[idx].highlights = input.value.trim();
+        });
+
+        // Send POST to server
+        saveBtn.disabled = true;
+        saveBtn.innerText = '⏳ Saving...';
+
+        try {
+          const res = await fetch('/api/data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${AUTH_TOKEN}`
+            },
+            body: JSON.stringify(SITE_DATA)
+          });
+          const result = await res.json();
+
+          if (result.success) {
+            showToast('✅ All changes saved successfully to live website!');
+          } else {
+            alert('Save failed: ' + (result.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Error saving data: ' + err.message);
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerText = '💾 Save All Changes';
+        }
+      });
+    }
+
+    // 10. Setup Change Password
+    function setupPasswordForm() {
+      const pwForm = document.getElementById('changePasswordForm');
+      pwForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newUsername = document.getElementById('inpNewUsername').value.trim();
+        const oldPassword = document.getElementById('inpCurrentPassword').value;
+        const newPassword = document.getElementById('inpNewPassword').value;
+
+        try {
+          const res = await fetch('/api/change-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${AUTH_TOKEN}`
+            },
+            body: JSON.stringify({ newUsername, oldPassword, newPassword })
+          });
+          const result = await res.json();
+
+          if (result.success) {
+            showToast('✅ Password updated successfully!');
+            document.getElementById('inpCurrentPassword').value = '';
+            document.getElementById('inpNewPassword').value = '';
+          } else {
+            alert(result.error || 'Password update failed');
+          }
+        } catch (err) {
+          alert('Network error: ' + err.message);
+        }
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastPopup');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+  </script>
+</body>
+</html>
