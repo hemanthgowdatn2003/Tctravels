@@ -153,7 +153,9 @@ function createServer() {
           writeJson(SITE_DATA_FILE, updatedData);
 
           // Synchronize to js/data.js
+          const jsDataPath = path.join(PUBLIC_DIR, 'js', 'data.js');
           const jsContent = `/**\n * TC Travels Mysore - Data Store\n * Automatically synchronized via Admin Portal\n */\n\nvar TC_DATA = ${JSON.stringify(updatedData, null, 2)};\n\nif (typeof window !== 'undefined') {\n  window.TC_DATA = TC_DATA;\n}\nif (typeof module !== 'undefined') {\n  module.exports = TC_DATA;\n}\n`;
+          fs.writeFileSync(jsDataPath, jsContent, 'utf8');
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true, message: 'Website content updated successfully!' }));

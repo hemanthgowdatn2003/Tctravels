@@ -56,6 +56,7 @@ async function loadServerData() {
   }
 
   // 2. If running on Node.js backend or relative API, sync latest server data
+  let synced = false;
   try {
     const res = await fetch('/api/data');
     if (res.ok) {
@@ -65,14 +66,27 @@ async function loadServerData() {
         if (typeof TC_DATA !== 'undefined') {
           try { Object.assign(TC_DATA, data); } catch (_) {}
         }
-        // Keep localStorage synchronized so subsequent static loads stay fresh
-        try {
-          localStorage.setItem('tc_travels_custom_data', JSON.stringify(data));
-        } catch (_) {}
+        try { localStorage.setItem('tc_travels_custom_data', JSON.stringify(data)); } catch (_) {}
+        synced = true;
       }
     }
-  } catch (err) {
-    // Graceful fallback to static TC_DATA
+  } catch (_) {}
+
+  // 3. If relative fetch didn't connect and on localhost, check port 3000
+  if (!synced && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')) {
+    try {
+      const res = await fetch('http://localhost:3000/api/data');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.company && data.fleet) {
+          window.TC_DATA = data;
+          if (typeof TC_DATA !== 'undefined') {
+            try { Object.assign(TC_DATA, data); } catch (_) {}
+          }
+          try { localStorage.setItem('tc_travels_custom_data', JSON.stringify(data)); } catch (_) {}
+        }
+      }
+    } catch (_) {}
   }
 }
 

@@ -392,5 +392,3 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined') {
   module.exports = TC_DATA;
 }
-
-

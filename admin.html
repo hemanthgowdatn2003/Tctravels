@@ -725,11 +725,21 @@
       <h1>TC Travels <span>Admin Portal</span></h1>
     </div>
 
-    <div class="admin-topbar-actions">
-      <a href="index.html" target="_blank" class="btn-view-site">
-        🌐 View Live Site
+    <div class="admin-topbar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <div id="connectionStatusBadge" style="padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; background: #E2E8F0; color: #475569;">
+        <span id="connectionStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #94A3B8; display: inline-block;"></span>
+        <span id="connectionStatusText">Checking connection...</span>
+      </div>
+      <a href="vehicles.html" target="_blank" class="btn-view-site" style="background: #0284C7; color: #FFF; padding: 7px 12px; border-radius: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+        🚗 Vehicles Page
       </a>
-      <button type="button" class="btn-logout" id="logoutBtn">
+      <a href="packages.html" target="_blank" class="btn-view-site" style="background: #475569; color: #FFF; padding: 7px 12px; border-radius: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+        🗺️ Tour Packages
+      </a>
+      <a href="index.html" target="_blank" class="btn-view-site" style="padding: 7px 12px; border-radius: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+        🏠 Home Page
+      </a>
+      <button type="button" class="btn-logout" id="logoutBtn" style="padding: 7px 12px; font-size: 0.82rem;">
         🚪 Logout
       </button>
     </div>
@@ -1343,13 +1353,58 @@
   <script>
     let SITE_DATA = null;
     let AUTH_TOKEN = sessionStorage.getItem('tc_admin_token') || '';
+    let API_BASE_URL = '';
+    let SERVER_CONNECTED = false;
 
-    // Automatic Environment Detection: GitHub Pages, Static Host, or Local Node Server
+    // Detect live Node.js server (relative port 3000/3001, or localhost:3000 from Live Server)
+    async function detectServerConnection() {
+      const badge = document.getElementById('connectionStatusBadge');
+      const badgeText = document.getElementById('connectionStatusText');
+      const dot = document.getElementById('connectionStatusDot');
+
+      // 1. Check relative /api/data (direct origin, e.g. localhost:3000)
+      try {
+        const res = await fetch('/api/data', { method: 'GET' });
+        if (res.ok) {
+          API_BASE_URL = '';
+          SERVER_CONNECTED = true;
+          if (badge) { badge.style.background = '#DCFCE7'; badge.style.color = '#166534'; }
+          if (dot) dot.style.background = '#22C55E';
+          if (badgeText) badgeText.innerText = '🟢 Node Server Connected (Auto-syncs files)';
+          return true;
+        }
+      } catch (_) {}
+
+      // 2. Check local server at http://localhost:3000 (if on Live Server port 5500 or file://)
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
+        try {
+          const res = await fetch('http://localhost:3000/api/data', { method: 'GET' });
+          if (res.ok) {
+            API_BASE_URL = 'http://localhost:3000';
+            SERVER_CONNECTED = true;
+            if (badge) { badge.style.background = '#DCFCE7'; badge.style.color = '#166534'; }
+            if (dot) dot.style.background = '#22C55E';
+            if (badgeText) badgeText.innerText = '🟢 Connected to Node Server (localhost:3000)';
+            return true;
+          }
+        } catch (_) {}
+      }
+
+      // 3. Static host / GitHub Pages mode
+      API_BASE_URL = '';
+      SERVER_CONNECTED = false;
+      if (badge) { badge.style.background = '#F1F5F9'; badge.style.color = '#475569'; }
+      if (dot) dot.style.background = '#0284C7';
+      if (badgeText) badgeText.innerText = '🌐 Browser Storage Mode (1-Click Publish to GitHub)';
+      return false;
+    }
+
     const IS_STATIC_HOST = window.location.hostname.endsWith('github.io') || 
                            window.location.protocol === 'file:' || 
                            (window.location.port !== '3000' && window.location.port !== '3001');
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await detectServerConnection();
       initTabs();
       checkAuth();
       setupAuthHandlers();
@@ -1358,12 +1413,6 @@
       setupModalHandlers();
       setupAddEntityForms();
       setupGalleryDropzone();
-
-      // Show Export button on GitHub Pages so user can download updated site-data.json
-      if (IS_STATIC_HOST) {
-        const exportBtn = document.getElementById('btnExportJson');
-        if (exportBtn) exportBtn.style.display = 'inline-flex';
-      }
     });
 
     // 1. Check Authentication State
@@ -1390,82 +1439,52 @@
 
         loginAlert.style.display = 'none';
 
-        // =====================================================================
-        // GITHUB PAGES / STATIC HOST AUTHENTICATION (Zero 405 Errors)
-        // =====================================================================
-        if (IS_STATIC_HOST) {
-          const storedPw = localStorage.getItem('tc_admin_password') || 'admin123';
-          const storedUser = localStorage.getItem('tc_admin_username') || 'admin';
-
-          if (username === storedUser && password === storedPw) {
-            AUTH_TOKEN = 'gh-pages-admin-auth';
-            sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
-            document.getElementById('loginModalOverlay').style.display = 'none';
-            loadSiteData();
-            showToast('✅ Logged in successfully on GitHub Pages!');
-            return;
-          } else {
-            loginAlert.innerText = 'Invalid username or password';
-            loginAlert.style.display = 'block';
-            return;
+        // Try Node server login first if connected
+        if (SERVER_CONNECTED) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password })
+            });
+            const result = await res.json();
+            if (result.success && result.token) {
+              AUTH_TOKEN = result.token;
+              sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
+              document.getElementById('loginModalOverlay').style.display = 'none';
+              await loadSiteData();
+              showToast('✅ Welcome back, Admin!');
+              return;
+            } else {
+              loginAlert.innerText = result.error || 'Invalid username or password';
+              loginAlert.style.display = 'block';
+              return;
+            }
+          } catch (serverErr) {
+            console.warn('Server login attempt failed, falling back to local:', serverErr);
           }
         }
 
-        // =====================================================================
-        // LOCAL NODE.JS SERVER AUTHENTICATION
-        // =====================================================================
-        try {
-          const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-          });
+        // Static host / GitHub Pages / Offline fallback
+        const storedPw = localStorage.getItem('tc_admin_password') || 'admin123';
+        const storedUser = localStorage.getItem('tc_admin_username') || 'admin';
 
-          // Graceful fallback if any static server returned 405
-          if (res.status === 405) {
-            const storedPw = localStorage.getItem('tc_admin_password') || 'admin123';
-            if (username === 'admin' && password === storedPw) {
-              AUTH_TOKEN = 'gh-pages-admin-auth';
-              sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
-              document.getElementById('loginModalOverlay').style.display = 'none';
-              loadSiteData();
-              showToast('Logged in successfully!');
-              return;
-            }
-          }
-
-          const result = await res.json();
-
-          if (result.success && result.token) {
-            AUTH_TOKEN = result.token;
-            sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
-            document.getElementById('loginModalOverlay').style.display = 'none';
-            loadSiteData();
-            showToast('Welcome back, Admin!');
-          } else {
-            loginAlert.innerText = result.error || 'Invalid username or password';
-            loginAlert.style.display = 'block';
-          }
-        } catch (err) {
-          // Offline fallback
-          const storedPw = localStorage.getItem('tc_admin_password') || 'admin123';
-          if (username === 'admin' && password === storedPw) {
-            AUTH_TOKEN = 'offline-admin-auth';
-            sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
-            document.getElementById('loginModalOverlay').style.display = 'none';
-            loadSiteData();
-            showToast('Logged in in offline mode!');
-          } else {
-            loginAlert.innerText = 'Server error or invalid credentials.';
-            loginAlert.style.display = 'block';
-          }
+        if (username === storedUser && password === storedPw) {
+          AUTH_TOKEN = 'local-admin-auth';
+          sessionStorage.setItem('tc_admin_token', AUTH_TOKEN);
+          document.getElementById('loginModalOverlay').style.display = 'none';
+          await loadSiteData();
+          showToast('✅ Logged in successfully!');
+        } else {
+          loginAlert.innerText = 'Invalid username or password (default: admin / admin123)';
+          loginAlert.style.display = 'block';
         }
       });
 
       logoutBtn.addEventListener('click', async () => {
-        if (!IS_STATIC_HOST && AUTH_TOKEN && !AUTH_TOKEN.startsWith('gh-pages')) {
+        if (SERVER_CONNECTED && AUTH_TOKEN && !AUTH_TOKEN.startsWith('local')) {
           try {
-            await fetch('/api/logout', {
+            await fetch(`${API_BASE_URL}/api/logout`, {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
             });
@@ -1498,7 +1517,20 @@
 
     // 4. Load Data from Browser Storage or Server
     async function loadSiteData() {
-      // 1. Check if user already modified data in browser storage
+      // 1. If connected to Node server, fetch live disk data first
+      if (SERVER_CONNECTED) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/data`);
+          if (res.ok) {
+            SITE_DATA = await res.json();
+            populateFields();
+            loadGalleryImages();
+            return;
+          }
+        } catch (err) {}
+      }
+
+      // 2. Check if user already modified data in browser storage
       try {
         const localSaved = localStorage.getItem('tc_travels_custom_data');
         if (localSaved) {
@@ -1511,19 +1543,6 @@
           }
         }
       } catch (e) {}
-
-      // 2. If running on local Node server, fetch /api/data
-      if (!IS_STATIC_HOST) {
-        try {
-          const res = await fetch('/api/data');
-          if (res.ok) {
-            SITE_DATA = await res.json();
-            populateFields();
-            loadGalleryImages();
-            return;
-          }
-        } catch (err) {}
-      }
 
       // 3. If on GitHub Pages or static host, load from TC_DATA in js/data.js or data/site-data.json
       if (typeof TC_DATA !== 'undefined' && TC_DATA && TC_DATA.company) {
@@ -2078,36 +2097,30 @@
         }
       } catch (_) {}
 
-      // 3. Static host (GitHub Pages, file://, etc.)
-      if (IS_STATIC_HOST) {
-        if (!silent) showToast('✅ Saved! All changes are live on this device.');
-        const exportBtn = document.getElementById('btnExportJson');
-        if (exportBtn) exportBtn.style.display = 'inline-flex';
-        return true;
+      // 3. Node.js backend: POST to /api/data to write to site-data.json and js/data.js on disk
+      if (SERVER_CONNECTED) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/data`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${AUTH_TOKEN}`
+            },
+            body: JSON.stringify(SITE_DATA)
+          });
+          const result = await res.json();
+          if (result.success) {
+            if (!silent) showToast('✅ Saved! Synchronized to live website and saved to disk.');
+            return true;
+          }
+        } catch (err) {
+          console.warn('Server sync warning, saved locally:', err);
+        }
       }
 
-      // 3. Node.js backend: POST to /api/data to write to site-data.json and js/data.js
-      try {
-        const res = await fetch('/api/data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AUTH_TOKEN}`
-          },
-          body: JSON.stringify(SITE_DATA)
-        });
-        const result = await res.json();
-        if (result.success) {
-          if (!silent) showToast('✅ All changes saved successfully to live website!');
-          return true;
-        } else {
-          if (!silent) alert('Save warning: ' + (result.error || 'Unknown error'));
-          return false;
-        }
-      } catch (err) {
-        if (!silent) showToast('✅ Saved to browser storage!');
-        return true;
-      }
+      // 4. Static host / GitHub Pages fallback
+      if (!silent) showToast('✅ Saved in browser! Click "🚀 Publish to GitHub" to publish online.');
+      return true;
     }
 
     // 9. Global Save Button Handler
@@ -2458,74 +2471,52 @@
       // Optimize image for fast web performance & storage safety (typically takes <50ms)
       const { dataUrl } = await compressImageForWeb(file);
 
-      // GITHUB PAGES / STATIC HOST: Save to localStorage & gallery
-      if (IS_STATIC_HOST) {
+      // 1. If connected to Node.js server, upload file to disk in images/uploads/
+      if (SERVER_CONNECTED) {
         try {
-          let customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
-          customGallery.unshift({ name: file.name, url: dataUrl, isUpload: true });
-          if (customGallery.length > 20) customGallery = customGallery.slice(0, 20);
-          try {
-            localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
-          } catch (quotaErr) {
-            // Prune older items if localStorage quota is tight
-            customGallery = customGallery.slice(0, 8);
-            localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+          const res = await fetch(`${API_BASE_URL}/api/upload`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${AUTH_TOKEN}`
+            },
+            body: JSON.stringify({
+              filename: file.name,
+              data: dataUrl
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success) {
+              return data;
+            }
           }
-        } catch (e) {
-          console.warn('Storage warning:', e);
+        } catch (serverErr) {
+          console.warn('Server upload failed, falling back to local:', serverErr);
         }
-
-        return {
-          success: true,
-          url: dataUrl,
-          filename: file.name
-        };
       }
 
-      // LOCAL NODE.JS SERVER: Send to /api/upload
+      // 2. Browser Storage / GitHub Pages fallback
       try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AUTH_TOKEN}`
-          },
-          body: JSON.stringify({
-            filename: file.name,
-            data: dataUrl
-          })
-        });
-
-        const text = await res.text();
-        let data = null;
+        let customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
+        customGallery.unshift({ name: file.name, url: dataUrl, isUpload: true });
+        if (customGallery.length > 8) customGallery = customGallery.slice(0, 8);
         try {
-          data = JSON.parse(text);
-        } catch (jsonErr) {
-          throw new Error(`Server returned status ${res.status}`);
-        }
-
-        if (res.ok && data && data.success) {
-          return data;
-        } else {
-          throw new Error((data && data.error) || 'Upload failed');
-        }
-      } catch (serverErr) {
-        // Fallback gracefully so admin user can still preview & continue work without interruption
-        console.warn('Direct upload error, saving locally as fallback:', serverErr);
-        try {
-          let customGallery = JSON.parse(localStorage.getItem('tc_custom_gallery') || '[]');
-          customGallery.unshift({ name: file.name, url: dataUrl, isUpload: true });
-          if (customGallery.length > 15) customGallery = customGallery.slice(0, 15);
           localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
-        } catch (_) {}
-
-        return {
-          success: true,
-          url: dataUrl,
-          filename: file.name,
-          fallback: true
-        };
+        } catch (quotaErr) {
+          customGallery = customGallery.slice(0, 4);
+          localStorage.setItem('tc_custom_gallery', JSON.stringify(customGallery));
+        }
+      } catch (e) {
+        console.warn('Storage warning:', e);
       }
+
+      return {
+        success: true,
+        url: dataUrl,
+        filename: file.name
+      };
     }
 
     // Live preview updater
@@ -2555,6 +2546,10 @@
           SITE_DATA.tours[idx].image = val;
         }
       }
+      clearTimeout(window._urlInputSaveTimer);
+      window._urlInputSaveTimer = setTimeout(() => {
+        saveSiteDataToServer(true);
+      }, 500);
     }
 
     // Preset chooser
@@ -2562,8 +2557,13 @@
       if (!val) return;
       const input = document.getElementById(inputId);
       const preview = document.getElementById(previewId);
-      if (input) input.value = val;
+      if (input) {
+        input.value = val;
+        input.dispatchEvent(new Event('input'));
+        input.dispatchEvent(new Event('change'));
+      }
       if (preview) preview.src = val;
+      setTimeout(() => { saveSiteDataToServer(true); }, 200);
     }
 
     // Upload when adding vehicle in Modal
