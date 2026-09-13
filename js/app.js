@@ -111,12 +111,64 @@ function initMobileNavigation() {
   const toggleBtn = document.getElementById('mobileMenuToggle');
   const navMenu = document.getElementById('navMenuBar');
 
-  if (toggleBtn && navMenu) {
-    toggleBtn.addEventListener('click', () => {
-      navMenu.classList.toggle('open');
-      toggleBtn.innerText = navMenu.classList.contains('open') ? '✕' : '☰';
-    });
+  if (!toggleBtn || !navMenu) return;
+
+  // Ensure backdrop exists
+  let backdrop = document.querySelector('.nav-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.className = 'nav-backdrop';
+    document.body.appendChild(backdrop);
   }
+
+  function openMenu() {
+    navMenu.classList.add('open');
+    backdrop.classList.add('open');
+    document.body.classList.add('menu-open');
+    toggleBtn.innerText = '✕';
+    toggleBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMenu() {
+    navMenu.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.classList.remove('menu-open');
+    toggleBtn.innerText = '☰';
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (navMenu.classList.contains('open')) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  // Close when tapping the dark backdrop
+  backdrop.addEventListener('click', closeMenu);
+
+  // Close when clicking any navigation link
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      closeMenu();
+    });
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navMenu.classList.contains('open')) {
+      closeMenu();
+    }
+  });
+
+  // Auto close if resized to desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 992 && navMenu.classList.contains('open')) {
+      closeMenu();
+    }
+  });
 }
 
 /* ==========================================================================
@@ -348,24 +400,33 @@ function initHomePackageCarousel() {
     }
   });
 
-  // Touch Swipe
+  // Touch Swipe (Intelligent detection respecting vertical page scroll)
   let touchStartX = 0;
-  let touchEndX = 0;
+  let touchStartY = 0;
 
   track.addEventListener('touchstart', (e) => {
-    touchStartX = e.changedTouches[0].screenX;
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
   }, { passive: true });
 
   track.addEventListener('touchend', (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    const diff = touchStartX - touchEndX;
-    if (Math.abs(diff) > 45) {
-      if (diff > 0) {
-        nextSlide();
-      } else {
-        prevSlide();
+    if (e.changedTouches.length === 1) {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffX = touchStartX - touchEndX;
+      const diffY = touchStartY - touchEndY;
+
+      // Only trigger if horizontal swipe is dominant and exceeds 35px threshold
+      if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 0) {
+          nextSlide();
+        } else {
+          prevSlide();
+        }
+        restartAutoSlide();
       }
-      restartAutoSlide();
     }
   }, { passive: true });
 

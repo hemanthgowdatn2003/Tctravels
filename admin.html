@@ -671,12 +671,55 @@
       .admin-sidebar {
         flex-direction: row;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 12px 16px;
+      }
+      .sidebar-tab-btn {
+        white-space: nowrap;
+        width: auto;
+        padding: 8px 14px;
+        font-size: 0.85rem;
       }
       .sticky-save-bar {
         left: 0;
       }
       .form-grid-2, .form-grid-3 {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .admin-topbar {
+        padding: 0 12px;
+        height: 60px;
+      }
+      .admin-brand h1 {
+        font-size: 1.05rem;
+      }
+      .admin-brand img {
+        width: 32px;
+        height: 32px;
+      }
+      .btn-view-site {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+      }
+      .btn-logout {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+      }
+      .admin-main-content {
+        padding: 14px 10px 100px;
+      }
+      .modal-box-card {
+        padding: 18px 14px;
+        border-radius: 10px;
+      }
+      .login-box {
+        padding: 24px 16px;
+      }
+      .login-title {
+        font-size: 1.35rem;
       }
     }
   </style>
